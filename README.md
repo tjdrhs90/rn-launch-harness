@@ -16,8 +16,11 @@ claude plugins install rn-launch-harness@rn-launch-harness
 ## Quick Start
 
 ```bash
-# 새 앱 파이프라인 시작
+# 아이디어가 있을 때
 /rn-harness "일일 커피 구독 관리 앱"
+
+# 아이디어가 없을 때 — 스토어 탑차트 조사 → 1인개발 가능한 앱 추천
+/rn-harness
 
 # 참고 사이트/이미지 포함
 /rn-harness "캘린더 앱" --ref https://cal.com
