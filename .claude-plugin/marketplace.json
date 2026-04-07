@@ -1,7 +1,22 @@
 {
-  "pluginId": "rn-launch-harness",
-  "displayName": "RN Launch Harness",
-  "shortDescription": "React Native 앱을 아이디어부터 스토어 출시까지 자동화하는 하네스",
-  "category": "mobile",
-  "tags": ["react-native", "expo", "mobile", "app-store", "google-play", "admob", "harness"]
+  "name": "rn-launch-harness",
+  "owner": {
+    "name": "ssg"
+  },
+  "metadata": {
+    "description": "React Native app development harness — from market research to store submission."
+  },
+  "plugins": [
+    {
+      "name": "rn-launch-harness",
+      "source": "./",
+      "description": "React Native app development harness — from market research to store submission. Automates the entire mobile app lifecycle: ideation, planning, design, development, AdMob integration, EAS build, screenshots, and App Store / Google Play submission.",
+      "version": "1.0.0",
+      "author": {
+        "name": "ssg"
+      },
+      "license": "MIT",
+      "keywords": ["react-native", "expo", "harness", "mobile", "app-store", "google-play", "admob", "pipeline", "generator", "evaluator"]
+    }
+  ]
 }
