@@ -1,0 +1,286 @@
+# harness-generator — Phase 5: 앱 빌드
+
+계약 기준에 따라 React Native + Expo 앱을 빌드한다.
+
+## Trigger
+
+오케스트레이터에서 Phase 5 (Generator)로 호출됨.
+
+## Input
+
+- `docs/harness/contract.md` (완료 기준)
+- `docs/harness/plans/YYYY-MM-DD-prd.md` (PRD)
+- `docs/harness/plans/YYYY-MM-DD-design.md` (디자인)
+- `docs/harness/feedback/round-N-*.md` (Round 2+ 시 Evaluator 피드백)
+
+## Process
+
+### Round 1: 전체 빌드
+
+#### Step 1: 프로젝트 스캐폴딩
+
+```bash
+npx create-expo-app@latest $APP_NAME --template blank-typescript
+cd $APP_NAME
+```
+
+필수 의존성 설치:
+```bash
+# Core
+npx expo install expo-router react-native-safe-area-context react-native-screens expo-linking expo-constants expo-status-bar
+
+# Styling
+npm install nativewind tailwindcss
+npx tailwindcss init
+
+# State
+npm install zustand @tanstack/react-query axios
+
+# Forms
+npm install react-hook-form zod @hookform/resolvers
+
+# UI
+npm install @shopify/flash-list react-native-reanimated @gorhom/bottom-sheet
+
+# AdMob + ATT (광고 추적 권한)
+npm install react-native-google-mobile-ads
+npx expo install expo-tracking-transparency
+
+# Test
+npm install -D vitest @testing-library/react-native
+```
+
+#### Step 1.5: 플랫폼 공통 설정 (CRITICAL)
+
+`app.config.ts` 필수 설정:
+
+```typescript
+export default {
+  name: "$APP_NAME",
+  slug: "$APP_SLUG",
+  version: "1.0.0",
+  // 기본 언어: 한국어
+  primaryLanguage: "ko",
+  // 방향: Portrait 고정
+  orientation: "portrait",
+  // Bundle ID — iOS/Android 동일
+  ios: {
+    bundleIdentifier: "com.{company}.{appname}",
+    buildNumber: "1",
+    supportsTablet: false, // iPad 지원 제거
+    infoPlist: {
+      // 암호화 미사용 선언 (심사 시 불필요한 질문 방지)
+      ITSAppUsesNonExemptEncryption: false,
+      // ATT 권한 요청 문구
+      NSUserTrackingUsageDescription:
+        "맞춤형 광고를 제공하기 위해 활동 추적 권한이 필요합니다.",
+      // Accessibility Bundle Name (다양한 검색 키워드)
+      CFBundleDisplayName: "$APP_DISPLAY_NAME",
+      CFBundleSpokenName: "$APP_SPOKEN_NAME", // 영문 발음명
+    },
+    config: {
+      usesNonExemptEncryption: false,
+    },
+  },
+  android: {
+    package: "com.{company}.{appname}", // iOS와 동일
+    versionCode: 1,
+    adaptiveIcon: {
+      foregroundImage: "./assets/images/adaptive-icon.png",
+      backgroundColor: "#ffffff",
+    },
+    // SafeArea: Android에서도 상태바/네비게이션바 침범 방지
+    softwareKeyboardLayoutMode: "pan",
+  },
+  plugins: [
+    "expo-router",
+    "expo-tracking-transparency",
+    [
+      "react-native-google-mobile-ads",
+      {
+        androidAppId: "ca-app-pub-XXXX~ZZZZ",
+        iosAppId: "ca-app-pub-XXXX~YYYY",
+      },
+    ],
+  ],
+};
+```
+
+#### Step 1.6: ATT (App Tracking Transparency) 구현
+
+iOS에서 AdMob 광고 최적화를 위해 광고 추적 권한 요청이 필요.
+**앱 마운트 직후 바로 요청하면 얼럿이 안 나오므로 반드시 딜레이를 준다.**
+
+`src/core/providers/TrackingProvider.tsx`:
+```typescript
+import { useEffect } from 'react';
+import { Platform } from 'react-native';
+import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
+
+export function useTrackingPermission() {
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    
+    // 앱 완전히 로드된 후 2초 딜레이
+    const timer = setTimeout(async () => {
+      await requestTrackingPermissionsAsync();
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+}
+```
+
+Root `_layout.tsx`에서 호출:
+```typescript
+import '../global.css';
+import { useTrackingPermission } from '@core/providers/TrackingProvider';
+
+export default function RootLayout() {
+  useTrackingPermission();
+  // ...
+}
+```
+
+**HARD GATE**: ATT 없이 AdMob 사용 시 Apple 심사 리젝 사유.
+
+#### Step 2: NativeWind 설정 (CRITICAL GATE)
+
+반드시 6가지 설정 완료:
+1. `babel.config.js` — `['babel-preset-expo', { jsxImportSource: 'nativewind' }]` + `'nativewind/babel'`
+2. `metro.config.js` — `withNativeWind(config, { input: './global.css' })`
+3. `tailwind.config.js` — `presets: [require('nativewind/preset')]` + content paths
+4. `global.css` — `@tailwind base; @tailwind components; @tailwind utilities;`
+5. Root `_layout.tsx` — `import '../global.css'`
+6. `nativewind-env.d.ts` — `/// <reference types="nativewind/types" />`
+
+**하나라도 누락 시 className이 동작하지 않아 전체 UI가 깨짐.**
+
+#### Step 3: FSD 구조 생성
+
+PRD의 FSD 모듈 맵에 따라:
+```
+src/
+├── core/providers/
+├── features/{name}/
+│   ├── api/{name}.api.ts
+│   ├── hooks/use-{name}.ts
+│   ├── types/{name}.types.ts
+│   ├── ui/  (필요시)
+│   ├── store/{name}.store.ts  (필요시)
+│   └── index.ts
+├── entities/{name}/
+│   ├── api/{name}.api.ts
+│   ├── store/{name}.store.ts
+│   ├── types/{name}.types.ts
+│   └── index.ts
+├── widgets/
+└── shared/
+    ├── api/client.ts
+    ├── config/{env,theme}.ts
+    ├── lib/
+    ├── types/common.ts
+    └── ui/{Button,Card,Input,Typography}.tsx
+```
+
+#### Step 4: Shared 레이어 구현
+
+- Axios 클라이언트 (인터셉터, 토큰 리프레시)
+- 테마 토큰 (디자인 시스템 반영)
+- 공통 컴포넌트 (Button, Card, Input, Typography)
+- 공통 타입 (IApiError, IApiResponse, TPagination)
+
+#### Step 5: Feature/Entity 구현
+
+PRD 순서대로:
+1. 타입 정의 (Interface `I` prefix, Type `T` prefix, Enum `E` prefix)
+2. API 함수 구현
+3. TanStack Query hooks 작성
+4. Zustand store (필요시)
+5. barrel export (index.ts)
+
+#### Step 6: 화면 구현
+
+Expo Router 파일 기반 라우팅:
+- 모든 화면 `SafeAreaView` 필수
+- NativeWind `className`만 사용
+- 로딩/에러/빈 상태 처리
+- 리스트는 FlashList 사용
+- 폼은 React Hook Form + Zod
+
+#### Step 7: 테스트 작성
+
+- 테스트 러너 설정 (vitest)
+- 핵심 비즈니스 로직 유닛 테스트
+- 유틸리티 함수 테스트
+
+#### Step 8: 자체 평가 (MANDATORY)
+
+```bash
+npm run typecheck  # 에러 0개
+npm run lint       # 에러 0개
+npm test           # 전체 pass
+```
+
+계약 기준별 자체 검증 후 핸드오프 작성.
+
+### Round 2+: 피드백 기반 수정
+
+1. `docs/harness/feedback/round-N-*.md` 읽기
+2. 모든 FAIL 기준 수정
+3. 버그 수정 (critical > major > minor)
+4. 스텁 → 실제 구현
+5. 자체 평가 재실행
+6. 핸드오프 작성
+
+## Output
+
+`docs/harness/handoff/round-N-gen.md`:
+
+```markdown
+# Generator Handoff — Round N
+
+## What Was Built/Fixed
+[요약]
+
+## Contract Self-Assessment
+- [DONE] 기준 1: [증거]
+- [DONE] 기준 2: [증거]
+- [PARTIAL] 기준 3: [미비 사항]
+
+## Test Results
+- npm run typecheck: PASS (에러 0)
+- npm run lint: PASS (에러 0)
+- npm test: 24 tests, 24 passed
+
+## FSD Compliance
+- 레이어 규칙: PASS
+- barrel export: PASS
+- any 타입: 0개
+
+## Known Issues
+- [미해결 사항]
+```
+
+Git commit:
+```bash
+git add .
+git commit -m "feat: Round N — [요약]"
+```
+
+## State Update
+
+```yaml
+next_role: harness-evaluator
+```
+
+## HARD GATES
+
+- NativeWind 6가지 설정 누락 시 즉시 수정 (CRITICAL)
+- FSD 레이어 규칙 위반 금지
+- `any` 타입 사용 금지
+- 모든 화면 SafeAreaView 필수
+- inline style 금지 (className만)
+- 자체 평가 건너뛰기 금지
+- 핸드오프 파일 없이 QA 진행 금지
+- Import는 반드시 `@/` alias 사용

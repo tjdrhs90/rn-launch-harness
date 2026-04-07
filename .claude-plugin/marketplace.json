@@ -1,0 +1,7 @@
+{
+  "pluginId": "rn-launch-harness",
+  "displayName": "RN Launch Harness",
+  "shortDescription": "React Native 앱을 아이디어부터 스토어 출시까지 자동화하는 하네스",
+  "category": "mobile",
+  "tags": ["react-native", "expo", "mobile", "app-store", "google-play", "admob", "harness"]
+}

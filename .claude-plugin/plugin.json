@@ -1,0 +1,23 @@
+{
+  "name": "rn-launch-harness",
+  "version": "1.0.0",
+  "description": "React Native app development harness — from market research to store submission. Automates the entire mobile app lifecycle: ideation, planning, design, development, AdMob integration, EAS build, screenshots, and App Store / Google Play submission.",
+  "author": "ssg",
+  "license": "MIT",
+  "keywords": [
+    "react-native",
+    "expo",
+    "harness",
+    "mobile",
+    "app-store",
+    "google-play",
+    "admob",
+    "pipeline",
+    "generator",
+    "evaluator"
+  ],
+  "repository": "https://github.com/tjdrhs90/rn-launch-harness",
+  "hooks": {
+    "StopFailure": ["hooks/stop-failure-handler.sh"]
+  }
+}
