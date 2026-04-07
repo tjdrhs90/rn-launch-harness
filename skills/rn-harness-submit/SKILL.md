@@ -18,24 +18,31 @@ App Store Connect API와 Google Play Developer API를 사용하여 앱을 스토
 
 #### A-1: API 키 확인
 
-`config.md`에서 확인:
-- `ios.asc_api_key_id` — Key ID
-- `ios.asc_issuer_id` — Issuer ID  
-- `ios.asc_private_key_path` — .p8 파일 경로
+**우선 `.env` 파일에서 읽기:**
+```bash
+source .env  # 또는 직접 파싱
+```
 
-비어있으면 AskUserQuestion:
+확인할 값:
+- `ASC_KEY_ID` — API Key ID (10자리)
+- `ASC_ISSUER_ID` — Issuer ID (UUID)
+- `ASC_PRIVATE_KEY_PATH` — .p8 파일 경로 (기본: `./credentials/asc-api-key.p8`)
+
+**값이 비어있거나 .p8 파일이 없으면** AskUserQuestion:
 ```
 App Store Connect API Key가 필요합니다.
+.env 파일에 값이 설정되지 않았습니다.
 
 1. App Store Connect → Users and Access → Integrations → API Keys
 2. 새 키 생성 (Admin 권한)
-3. 다음 정보를 입력해주세요:
+3. .p8 파일을 credentials/asc-api-key.p8 에 저장
+4. .env 파일에 다음을 입력:
 
-   Key ID: 
-   Issuer ID: 
-   .p8 파일 경로: 
+   ASC_KEY_ID=XXXXXXXXXX
+   ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+   ASC_PRIVATE_KEY_PATH=./credentials/asc-api-key.p8
 
-(이미 EAS에 설정되어 있다면 "eas" 입력)
+완료 후 Enter. (이미 EAS에 설정되어 있다면 "eas" 입력)
 ```
 
 #### A-2: EAS Submit (빌드 업로드)

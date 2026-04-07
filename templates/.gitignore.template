@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.expo/
+
+# Credentials — 절대 git에 올리지 않음
+credentials/
+*.p8
+*.p12
+*-sa.json
+service-account*.json
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build
+dist/
+*.ipa
+*.aab
+*.apk
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Harness screenshots (용량 큼)
+docs/harness/screenshots/
+docs/harness/store-assets/*.png
+
+# EAS
+.easignore

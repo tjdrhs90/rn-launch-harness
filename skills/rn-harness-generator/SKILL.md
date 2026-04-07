@@ -22,7 +22,20 @@
 ```bash
 npx create-expo-app@latest $APP_NAME --template blank-typescript
 cd $APP_NAME
+mkdir -p credentials
 ```
+
+프로젝트 루트에 환경 파일 생성:
+```bash
+# .env.example 복사 (플러그인 templates/ 에서)
+cp $CLAUDE_PLUGIN_ROOT/templates/.env.example .env.example
+cp .env.example .env
+
+# .gitignore 복사
+cp $CLAUDE_PLUGIN_ROOT/templates/.gitignore.template .gitignore
+```
+
+**IMPORTANT**: `.env`와 `credentials/`는 `.gitignore`에 포함되어 git에 올라가지 않음.
 
 필수 의존성 설치:
 ```bash

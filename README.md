@@ -81,15 +81,122 @@ claude plugins install rn-launch-harness@rn-launch-harness
 - **Maestro** (스크린샷용, 선택) — `curl -Ls "https://get.maestro.mobile.dev" | bash`
 - **gh CLI** (GitHub 연동)
 
-### Store Submission에 필요한 것
+## Setup — 키 파일 & 환경 변수
 
-| 플랫폼 | 필요 항목 | 발급 방법 |
-|--------|----------|----------|
-| iOS | App Store Connect API Key (.p8) | ASC → Users and Access → Integrations → API Keys |
-| iOS | Apple Developer Program 가입 | developer.apple.com |
-| Android | Google Play Service Account JSON | Play Console → Settings → API access |
-| Android | Google Play Developer 계정 | play.google.com/console |
-| AdMob | AdMob 계정 | apps.admob.com (광고 단위 수동 생성) |
+### 1. 프로젝트 디렉토리 구조
+
+```
+my-app/
+├── credentials/              # 키 파일 (git에 올라가지 않음)
+│   ├── asc-api-key.p8        # App Store Connect API Key
+│   └── google-play-sa.json   # Google Play Service Account
+├── .env                      # 환경 변수 (git에 올라가지 않음)
+├── .env.example              # 환경 변수 템플릿
+└── .gitignore                # credentials/, .env 제외
+```
+
+### 2. 환경 변수 (.env)
+
+프로젝트 루트에 `.env` 파일 생성:
+
+```bash
+# ──────────────────────────────────
+# App Store Connect API (iOS 제출)
+# ──────────────────────────────────
+ASC_KEY_ID=XXXXXXXXXX              # API Key ID (10자리)
+ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  # Issuer ID (UUID)
+ASC_PRIVATE_KEY_PATH=./credentials/asc-api-key.p8   # .p8 파일 경로
+
+# ──────────────────────────────────
+# Google Play Developer API (Android 제출)
+# ──────────────────────────────────
+GOOGLE_PLAY_SA_JSON=./credentials/google-play-sa.json  # Service Account JSON 경로
+
+# ──────────────────────────────────
+# AdMob (광고)
+# ──────────────────────────────────
+ADMOB_IOS_APP_ID=ca-app-pub-XXXX~YYYY       # AdMob iOS App ID
+ADMOB_ANDROID_APP_ID=ca-app-pub-XXXX~ZZZZ   # AdMob Android App ID
+# Ad Unit ID는 파이프라인 Phase 6에서 입력
+
+# ──────────────────────────────────
+# AI 이미지 생성 (스토어 에셋용, 선택)
+# ──────────────────────────────────
+GEMINI_API_KEY=                     # Google Gemini API Key
+# 앱 아이콘, Feature Graphic, 스크린샷 프레임 등 생성에 사용
+
+# ──────────────────────────────────
+# EAS (Expo Application Services)
+# ──────────────────────────────────
+EXPO_TOKEN=                         # Expo 액세스 토큰 (선택, CI용)
+```
+
+### 3. 키 파일 발급 가이드
+
+#### App Store Connect API Key (.p8)
+
+1. [App Store Connect](https://appstoreconnect.apple.com) 접속
+2. **Users and Access** → **Integrations** → **App Store Connect API**
+3. **Team Keys** 탭 → **Generate API Key**
+4. 이름 입력, 권한: **Admin** 또는 **App Manager**
+5. .p8 파일 다운로드 → `credentials/asc-api-key.p8`에 저장
+6. **Key ID** (10자리)와 **Issuer ID** (UUID)를 `.env`에 기록
+
+> .p8 파일은 **한 번만 다운로드 가능**합니다. 분실 시 새로 발급해야 합니다.
+
+#### Google Play Service Account (.json)
+
+1. [Google Play Console](https://play.google.com/console) 접속
+2. **Settings** → **API access**
+3. **Create new service account** 또는 Google Cloud Console에서 생성
+4. **역할**: Service Account User + Android Management → Release Manager
+5. Google Cloud Console에서 해당 Service Account의 **키 생성** → JSON
+6. JSON 파일 → `credentials/google-play-sa.json`에 저장
+
+#### Google Gemini API Key (선택 — AI 이미지 생성)
+
+1. [Google AI Studio](https://aistudio.google.com/apikey) 접속
+2. **Create API Key** 클릭
+3. 키 복사 → `.env`의 `GEMINI_API_KEY`에 기록
+4. 앱 아이콘, Feature Graphic, 프로모션 이미지 등 자동 생성에 사용
+
+#### AdMob App ID
+
+1. [AdMob](https://apps.admob.com) 접속
+2. **Apps** → **Add App** (iOS + Android 각각)
+3. App ID (`ca-app-pub-XXXX~YYYY`) → `.env`에 기록
+4. 광고 단위는 Phase 6에서 안내에 따라 수동 생성
+
+### 4. .gitignore (필수)
+
+프로젝트 생성 시 자동으로 추가됨:
+
+```gitignore
+# Credentials — 절대 git에 올리지 않음
+credentials/
+*.p8
+*.p12
+*-sa.json
+service-account*.json
+
+# Environment
+.env
+.env.local
+.env.*.local
+```
+
+### 5. 필수 vs 선택
+
+| 항목 | 필수 여부 | 없으면? |
+|------|----------|---------|
+| ASC API Key (.p8) | Phase 9에서 필요 | iOS 자동 제출 불가 → 수동 EAS Submit |
+| Google Play SA (.json) | Phase 9에서 필요 | Android API 호출 불가 → 수동 Play Console |
+| AdMob App ID | Phase 6에서 필요 | `--skip-admob`으로 건너뛰기 가능 |
+| Gemini API Key | 선택 | 이미지 직접 준비 (Figma, Canva 등) |
+| EAS Token | 선택 (CI용) | `eas login` 대화형 로그인으로 대체 |
+
+> **Phase 1~5 (시장조사~QA)는 키 파일 없이도 실행 가능합니다.**
+> 키는 Phase 6 이후에만 필요하므로 개발 먼저 하고 나중에 설정해도 됩니다.
 
 ## Architecture
 
