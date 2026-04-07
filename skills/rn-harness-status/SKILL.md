@@ -1,11 +1,11 @@
-# harness-status — 파이프라인 상태 조회
+# rn-harness-status — 파이프라인 상태 조회
 
 현재 파이프라인 진행 상황을 표시한다.
 
 ## Trigger
 
-- `/harness --status`
-- `/harness-status`
+- `/rn-harness --status`
+- `/rn-harness-status`
 
 ## Arguments
 

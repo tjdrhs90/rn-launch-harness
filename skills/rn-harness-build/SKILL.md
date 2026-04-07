@@ -1,4 +1,4 @@
-# harness-build — Phase 7: EAS Build
+# rn-harness-build — Phase 7: EAS Build
 
 EAS Build로 iOS/Android 바이너리를 빌드한다.
 
@@ -136,7 +136,7 @@ git commit -m "chore: configure EAS build profiles"
 
 ```yaml
 current_phase: screenshot
-next_role: harness-screenshot
+next_role: rn-harness-screenshot
 ```
 
 ## HARD GATES

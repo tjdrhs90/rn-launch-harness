@@ -1,4 +1,4 @@
-# harness-admob — Phase 6: AdMob 통합
+# rn-harness-admob — Phase 6: AdMob 통합
 
 AdMob 광고를 앱에 통합한다. 광고 단위는 API로 생성 불가하므로 사용자에게 수동 생성을 안내하고, Ad Unit ID를 받아 코드에 삽입한다.
 
@@ -193,7 +193,7 @@ git commit -m "feat: integrate AdMob ads"
 
 ```yaml
 current_phase: build
-next_role: harness-build
+next_role: rn-harness-build
 ```
 
 ## HARD GATES

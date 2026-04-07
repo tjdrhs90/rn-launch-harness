@@ -15,7 +15,7 @@ Anthropic의 [Harness Design for Long-Running Apps](https://www.anthropic.com/en
 ## Pipeline
 
 ```
-/harness "앱 아이디어" → Research → Plan → Design → Contract → Build → QA → AdMob → Build → Screenshots → Submit
+/rn-harness "앱 아이디어" → Research → Plan → Design → Contract → Build → QA → AdMob → Build → Screenshots → Submit
 ```
 
 ## Key Directories

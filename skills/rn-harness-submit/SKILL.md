@@ -1,4 +1,4 @@
-# harness-submit — Phase 9: 스토어 제출
+# rn-harness-submit — Phase 9: 스토어 제출
 
 App Store Connect API와 Google Play Developer API를 사용하여 앱을 스토어에 제출한다.
 

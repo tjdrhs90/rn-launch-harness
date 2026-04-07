@@ -1,4 +1,4 @@
-# harness-generator — Phase 5: 앱 빌드
+# rn-harness-generator — Phase 5: 앱 빌드
 
 계약 기준에 따라 React Native + Expo 앱을 빌드한다.
 
@@ -271,7 +271,7 @@ git commit -m "feat: Round N — [요약]"
 ## State Update
 
 ```yaml
-next_role: harness-evaluator
+next_role: rn-harness-evaluator
 ```
 
 ## HARD GATES

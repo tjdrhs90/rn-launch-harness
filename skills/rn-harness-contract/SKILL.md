@@ -1,4 +1,4 @@
-# harness-contract — Phase 4: 계약 협상
+# rn-harness-contract — Phase 4: 계약 협상
 
 Generator와 Evaluator가 빌드 전 완료 기준에 합의한다.
 
@@ -137,7 +137,7 @@ AGREED — [날짜]
 
 ```yaml
 current_phase: generator
-next_role: harness-generator
+next_role: rn-harness-generator
 current_round: 1
 ```
 

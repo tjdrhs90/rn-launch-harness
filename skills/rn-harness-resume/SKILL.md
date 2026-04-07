@@ -1,10 +1,10 @@
-# harness-resume — 파이프라인 재개
+# rn-harness-resume — 파이프라인 재개
 
 일시정지된 파이프라인을 재개한다. 레이트 리밋, 수동 작업 완료 후 사용.
 
 ## Trigger
 
-- `/harness --resume`
+- `/rn-harness --resume`
 - 자동 재개 (hooks/stop-failure-handler.sh)
 
 ## Process

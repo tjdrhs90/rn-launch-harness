@@ -1,4 +1,4 @@
-# harness-screenshot — Phase 8: 스토어 스크린샷
+# rn-harness-screenshot — Phase 8: 스토어 스크린샷
 
 Maestro를 사용하여 앱 스토어용 스크린샷을 자동 촬영한다.
 
@@ -158,7 +158,7 @@ AskUserQuestion:
 
 ```yaml
 current_phase: submit
-next_role: harness-submit
+next_role: rn-harness-submit
 ```
 
 ## HARD GATES

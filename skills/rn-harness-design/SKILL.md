@@ -1,4 +1,4 @@
-# harness-design — Phase 3: 디자인 시스템
+# rn-harness-design — Phase 3: 디자인 시스템
 
 PRD를 기반으로 NativeWind 디자인 시스템을 설계한다.
 
@@ -145,7 +145,7 @@ AdMob 광고의 시각적 통합:
 
 ```yaml
 current_phase: contract
-next_role: harness-contract
+next_role: rn-harness-contract
 ```
 
 ## HARD GATES

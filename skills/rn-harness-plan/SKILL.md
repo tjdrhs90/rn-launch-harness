@@ -1,4 +1,4 @@
-# harness-plan — Phase 2: 기획 (PRD)
+# rn-harness-plan — Phase 2: 기획 (PRD)
 
 시장 조사 결과를 기반으로 상세 기획서(PRD)를 작성한다.
 
@@ -162,7 +162,7 @@ AskUserQuestion으로 PRD 요약 공유:
 
 ```yaml
 current_phase: design
-next_role: harness-design
+next_role: rn-harness-design
 ```
 
 ## HARD GATES

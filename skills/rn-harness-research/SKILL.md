@@ -1,4 +1,4 @@
-# harness-research — Phase 1: 시장 조사
+# rn-harness-research — Phase 1: 시장 조사
 
 앱 아이디어를 기반으로 시장 조사, 경쟁 앱 분석, 기회 영역을 도출한다.
 
@@ -110,7 +110,7 @@ AskUserQuestion으로 조사 결과를 공유하고 방향 확인:
 완료 후 `state.md` 업데이트:
 ```yaml
 current_phase: plan
-next_role: harness-plan
+next_role: rn-harness-plan
 ```
 
 ## HARD GATES

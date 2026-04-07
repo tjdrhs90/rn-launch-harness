@@ -1,4 +1,4 @@
-# harness-evaluator — Phase 5: QA 평가
+# rn-harness-evaluator — Phase 5: QA 평가
 
 Generator의 빌드를 계약 기준에 따라 검증한다.
 
@@ -183,12 +183,12 @@ grep -rn "TODO\|FIXME\|HACK\|XXX\|STUB\|setTimeout.*mock\|placeholder\|dummy" sr
 PASS:
 ```yaml
 current_phase: admob
-next_role: harness-admob
+next_role: rn-harness-admob
 ```
 
 FAIL:
 ```yaml
-next_role: harness-generator
+next_role: rn-harness-generator
 current_round: N+1
 ```
 
