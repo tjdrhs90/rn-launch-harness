@@ -1,24 +1,42 @@
-# rn-harness-evaluator — Phase 5: QA 평가
+# rn-harness-evaluator — Phase 5: 3-Phase Progressive QA
 
-Generator의 빌드를 계약 기준에 따라 검증한다.
+Verifies the Generator's build against contract criteria through a progressive 3-phase evaluation pipeline.
 
 ## Principle
 
-**"반드시 코드를 실행하고 확인하라."** 코드 리뷰만으로 PASS 판정하지 않는다.
+**"Run the code, see the app, then judge."** Never PASS based on code review alone. Execute commands, capture screenshots when possible, and verify independently.
 
 ## Trigger
 
-오케스트레이터에서 Phase 5 (Evaluator)로 호출됨.
+Called by the orchestrator for Phase 5 (Evaluator). The orchestrator sets the **QA phase** (5.1, 5.2, or 5.3) and the **evaluator profile**.
 
 ## Input
 
-- `docs/harness/contract.md` (완료 기준)
-- `docs/harness/handoff/round-N-gen.md` (Generator 핸드오프)
-- 실제 프로젝트 코드
+- `docs/harness/contract.md` (completion criteria)
+- `docs/harness/handoff/round-N-gen.md` (Generator handoff)
+- `docs/harness/config.md` — read `evaluator` field for profile selection
+- `references/evaluation-criteria.md` (scoring rubrics)
+- Actual project source code
 
-## Process
+## Evaluator Profiles
 
-### Step 0: 테스트 실행
+Read the `evaluator` field from `docs/harness/config.md` to determine the profile:
+
+| Profile | Behavior |
+|---------|----------|
+| `default` | Full 3-phase QA (5.1 → 5.2 → 5.3) |
+| `quick` | Phase 5.1 only (functional check). Skip design and edge cases. |
+| `strict` | All 3 phases with lower pass thresholds: Design 8+, ALL 6 edge-case teammates must PASS with zero warnings |
+
+If no `evaluator` field is found, use `default`.
+
+---
+
+## Phase 5.1: Functional (Does it WORK?)
+
+The foundation gate. If the code does not compile, lint, pass tests, and meet the contract, nothing else matters.
+
+### Step 1: Run Automated Checks
 
 ```bash
 npm run typecheck 2>&1
@@ -26,177 +44,355 @@ npm run lint 2>&1
 npm test 2>&1
 ```
 
-각 결과를 기록. 에러가 있으면 해당 기준 자동 FAIL.
+Record every result. Any error = automatic FAIL for that criterion.
 
-### Step 1: NativeWind 설정 검증 (CRITICAL GATE)
+### Step 2: NativeWind 6-Check Gate (CRITICAL)
 
-6가지 설정 확인:
-1. `babel.config.js` — jsxImportSource + nativewind/babel
-2. `metro.config.js` — withNativeWind
-3. `tailwind.config.js` — nativewind/preset + content paths
-4. `global.css` — @tailwind directives
-5. Root `_layout.tsx` — global.css import
-6. `nativewind-env.d.ts` — type reference
+Verify all 6 configuration points:
 
-**하나라도 누락 → 전체 FAIL (className 미동작)**
+1. `babel.config.js` — `jsxImportSource` + `nativewind/babel` plugin
+2. `metro.config.js` — `withNativeWind` wrapper
+3. `tailwind.config.js` — `nativewind/preset` + correct `content` paths
+4. `global.css` — `@tailwind base/components/utilities` directives
+5. Root `_layout.tsx` — `import "./global.css"` present
+6. `nativewind-env.d.ts` — `/// <reference types="nativewind/types" />`
 
-### Step 2: FSD 아키텍처 검증
+**ANY missing item = FULL FAIL** (className will not work at runtime).
+
+### Step 3: FSD Architecture Validation
 
 ```bash
-# any 타입 검사
+# any type usage
 grep -r ":\s*any" src/ --include="*.ts" --include="*.tsx" | grep -v node_modules
 grep -r "<any>" src/ --include="*.ts" --include="*.tsx" | grep -v node_modules
 
-# FSD 레이어 위반 검사 (features가 features를 import하는지)
+# FSD layer violations (features importing from features)
 grep -r "from '@features/" src/features/ --include="*.ts" --include="*.tsx"
 
-# barrel export 확인
+# barrel export check
 find src/features src/entities -name "index.ts" -type f
 ```
 
-- `any` 타입 1개라도 → FAIL
-- FSD 위반 1건이라도 → FAIL
-- barrel export 누락 → FAIL
+- `any` type count > 0 → FAIL
+- FSD cross-layer violation > 0 → FAIL
+- Missing barrel export → FAIL
 
-### Step 3: 계약 기준 검증
+### Step 4: Contract Criteria Verification
 
-각 기준에 대해:
-1. 실제 테스트 수행 (코드 실행 또는 코드 분석)
-2. PASS 또는 FAIL 판정
-3. 증거 기록
+For EACH criterion in `docs/harness/contract.md`:
 
-**판정 기준:**
-- PASS: 코드가 실제로 동작하고 기준을 충족
-- FAIL: 기준 미충족, 스텁, 미구현, 에러
+1. Perform actual verification (run command or analyze specific code with file:line evidence)
+2. Determine PASS or FAIL
+3. Record evidence (command output, code reference, or test result)
 
-**증거 유형:**
-- `typecheck`: typecheck 명령 결과
-- `lint`: lint 명령 결과
-- `test`: 테스트 실행 결과
-- `code`: 코드 분석 결과 (파일:라인)
+Evidence types: `typecheck`, `lint`, `test`, `code` (file:line), `runtime` (simulator output)
 
-### Step 4: 모바일 UX 검증
+### Step 5: Stub Detection
 
-- [ ] SafeAreaView 모든 화면에 사용
-- [ ] 로딩 상태 (ActivityIndicator 또는 커스텀)
-- [ ] 에러 상태 (에러 메시지 + 재시도)
-- [ ] 빈 상태 (데이터 없을 때 안내)
-- [ ] 터치 타겟 44x44+ (hitSlop 포함)
-- [ ] 키보드 회피 (KeyboardAvoidingView)
-- [ ] FlashList 사용 (ScrollView로 리스트 금지)
-
-### Step 5: 디자인 품질 평가
-
-4축 평가:
-
-| 축 | 비중 | 기준 |
-|---|---|---|
-| Design Quality | 30% | 일관성, 정체성, 색상/타이포/레이아웃 조화 |
-| Originality | 25% | 커스텀 결정, 템플릿/AI 슬롭 탈피 |
-| Craft | 25% | 간격 일관성, 타이포 위계, 대비율 |
-| Functionality | 20% | 사용성, 접근성 |
-
-각 축 1~10점. 총점 7/10 미만 → FAIL.
-
-### Step 6: 스텁 탐지
-
-다음 패턴 검색:
 ```bash
 grep -rn "TODO\|FIXME\|HACK\|XXX\|STUB\|setTimeout.*mock\|placeholder\|dummy" src/ --include="*.ts" --include="*.tsx"
 ```
 
-스텁 발견 → FAIL.
+Any stub found = FAIL.
 
-### Step 7: 종합 판정
+### Step 6: End-to-End Data Flow Check
 
-**PASS 조건 (모두 충족):**
-- 계약 기준 전체 PASS
-- typecheck 에러 0
-- lint 에러 0
-- any 타입 0
-- FSD 위반 0
-- NativeWind 설정 완전
-- SafeAreaView 누락 0
-- 스텁 0
-- 디자인 총점 7/10+
-- 테스트 전체 pass
+Trace at least one complete data flow from user action → state change → UI update. Verify the chain is real, not mocked.
 
-**FAIL → Generator에게 피드백 반환**
+### Phase 5.1 Judgment
+
+**PASS conditions (ALL must be met):**
+- typecheck errors: 0
+- lint errors: 0
+- `any` types: 0
+- FSD violations: 0
+- NativeWind config: complete
+- SafeAreaView: present on all screens
+- Stubs: 0
+- ALL contract criteria: PASS
+- Tests: all passing
+- End-to-end data flow: verified
+
+**FAIL → Return feedback to Generator with specific fix instructions.**
+
+If evaluator profile is `quick`, stop here after Phase 5.1 and issue final judgment.
+
+---
+
+## Phase 5.2: Quality (Is it GOOD?)
+
+Only entered after Phase 5.1 PASS.
+
+### Step 1: Design 4-Axis Scoring
+
+Score each axis 1-10 using `references/evaluation-criteria.md` rubrics:
+
+| Axis | Weight | Criteria |
+|------|--------|----------|
+| Design Quality | 30% | Consistency, identity, color/typography/layout harmony |
+| Originality | 25% | Custom design decisions, avoidance of template/AI slop |
+| Craft | 25% | Spacing consistency, typographic hierarchy, contrast ratios |
+| Functionality | 20% | Usability, accessibility, interaction quality |
+
+Weighted total = (DQ * 0.3) + (O * 0.25) + (C * 0.25) + (F * 0.20)
+
+### Step 2: Console and Build Warnings
+
+```bash
+npm run typecheck 2>&1 | grep -i "warning"
+npm run lint 2>&1 | grep -i "warning"
+```
+
+Record all warnings. While warnings do not auto-FAIL, they factor into Craft scoring.
+
+### Step 3: Interaction States Audit
+
+Every screen and data-dependent component MUST have:
+
+- **Loading state** — ActivityIndicator or custom skeleton
+- **Error state** — Error message + retry action
+- **Empty state** — Helpful guidance when no data exists
+
+Check every screen file for all three states.
+
+### Step 4: Responsive Layout Check
+
+Verify layouts work across different screen sizes:
+- Check for hardcoded pixel widths (should use flex/percentage/responsive units)
+- Verify ScrollView or FlashList for content that may overflow
+- Check horizontal layout assumptions that could break on narrow screens
+
+### Phase 5.2 Judgment
+
+**PASS conditions:**
+- Design weighted total: 7/10 or higher (8/10 for `strict` profile)
+- ALL interaction states present (loading, error, empty) on every data screen
+- No critical responsive layout issues
+
+**FAIL → Return feedback with specific design/UX fix instructions.**
+
+---
+
+## Phase 5.3: Edge Cases (Can it SURVIVE?)
+
+Only entered after Phase 5.2 PASS.
+
+### Step 1: Screenshot-and-Study (Simulator-Based)
+
+Before scoring, attempt to run the app on a simulator and capture screenshots:
+
+```bash
+# Check if Maestro is available
+which maestro
+```
+
+**If Maestro IS available:**
+
+1. Generate a quick Maestro flow YAML that navigates through all screens and takes screenshots:
+   ```bash
+   # Create maestro directory if needed
+   mkdir -p maestro
+
+   # Generate qa-flow.yaml based on app's navigation structure
+   # (analyze _layout.tsx and navigation config to build the flow)
+   ```
+
+2. Run the flow:
+   ```bash
+   npx expo start --ios &
+   sleep 10
+   maestro test maestro/qa-flow.yaml
+   ```
+
+3. Store screenshots in `docs/harness/screenshots/round-N/`
+
+4. Read each screenshot with the Read tool to visually analyze the app — check for layout issues, misalignments, broken UI, and visual quality.
+
+**If Maestro is NOT available:**
+
+Fall back to code-only analysis. Note this as a limitation in the feedback report:
+```
+> NOTE: Maestro not available. Phase 5.3 performed via code analysis only.
+> Visual verification was not possible. Consider installing Maestro for full QA.
+```
+
+### Step 2: Agent Team (6 Parallel Sub-Agents)
+
+Launch 6 parallel sub-agents using the **Agent tool**. Each agent focuses on a specific testing dimension. ALL 6 must PASS for Phase 5.3 to PASS.
+
+#### Agent 1: Component Tester
+- Verify every UI component in `src/` renders correctly
+- Check prop types are properly defined
+- Verify component composition (no god components)
+- Check that interactive elements have proper press handlers
+- Verify NativeWind className usage is correct on each component
+
+#### Agent 2: E2E Flow Tester
+- Trace every user journey from entry to completion
+- Verify navigation flow matches the spec
+- Check data persistence (AsyncStorage, state management)
+- Verify deep linking if applicable
+- Confirm back navigation works correctly at every level
+
+#### Agent 3: Edge Case Tester
+- Empty input submission handling
+- Double tap / rapid press protection
+- Back button behavior at every screen
+- Large data sets (check FlashList estimatedItemSize, keyExtractor)
+- Boundary values (max length inputs, special characters, emoji)
+- Network error simulation handling
+- Offline state handling (if applicable)
+
+#### Agent 4: Code Quality Inspector
+- Unused imports detection
+- Dead code identification
+- Potential memory leaks (unsubscribed listeners, intervals without cleanup)
+- Missing cleanup in useEffect return
+- Accessibility audit (accessibilityLabel, accessibilityRole)
+- Console.log statements left in code
+- Hardcoded strings that should be constants
+
+#### Agent 5: Test Case Generator
+- Generate comprehensive test cases for untested code paths
+- Write the test cases to `__tests__/` directory
+- Run the generated tests
+- Share test results with other teammates via handoff notes
+- Identify coverage gaps
+
+#### Agent 6: Adversarial Reviewer
+- Challenge every PASS judgment from Agents 1-5
+- Look for scenarios the other agents missed
+- Try to find ways the app could crash or misbehave
+- Check for security issues (exposed keys, unsanitized input)
+- Verify error boundaries exist and work
+- Question optimistic assumptions
+
+### Phase 5.3 Judgment
+
+**PASS conditions:**
+- ALL 6 agent teammates return PASS
+- No critical or major bugs found
+- Screenshots (if available) show no visual defects
+
+**FAIL → Return comprehensive feedback from all failing agents.**
+
+---
 
 ## Output
 
-`docs/harness/feedback/round-N-qa.md`:
+Write evaluation results to `docs/harness/feedback/round-N-qa.md`:
 
 ```markdown
 # Evaluator Feedback — Round N
 
+## Phase: [5.1 | 5.2 | 5.3]
+## Profile: [default | quick | strict]
 ## Score: X/10
-## Trend: [improving/stagnant/declining]
+## Trend: [improving | stagnant | declining]
 ## Judgment: [PASS | FAIL]
 
-## Test Results
-- typecheck: [PASS/FAIL] — [에러 수]
-- lint: [PASS/FAIL] — [에러 수]
+## Phase 5.1: Functional
+### Test Results
+- typecheck: [PASS/FAIL] — [error count]
+- lint: [PASS/FAIL] — [error count]
 - test: [PASS/FAIL] — [X/Y passed]
 
-## NativeWind Setup
-- [PASS/FAIL] — [누락 항목]
+### NativeWind Setup
+- [PASS/FAIL] — [missing items if any]
 
-## FSD Compliance
-- any 타입: [개수]
-- 레이어 위반: [목록]
-- barrel export: [누락 목록]
+### FSD Compliance
+- any types: [count]
+- Layer violations: [list]
+- Barrel exports: [missing list]
 
-## Contract Verification
-- [PASS] 기준 1: [증거]
-- [FAIL] 기준 2: [기대 vs 실제]
+### Contract Verification
+- [PASS] Criterion 1: [evidence]
+- [FAIL] Criterion 2: [expected vs actual]
 ...
 
-## Mobile UX
-- SafeAreaView: [PASS/FAIL]
-- 로딩 상태: [PASS/FAIL]
-- 에러 상태: [PASS/FAIL]
-- 빈 상태: [PASS/FAIL]
+### Stub Detection
+- [list of stubs found, or "None"]
 
-## Design Quality
-| 축 | 점수 | 근거 |
-|---|---|---|
+### End-to-End Data Flow
+- [traced flow description and verification result]
+
+## Phase 5.2: Quality (if reached)
+### Design Quality
+| Axis | Score | Evidence |
+|------|-------|----------|
 | Design Quality | X/10 | ... |
 | Originality | X/10 | ... |
 | Craft | X/10 | ... |
 | Functionality | X/10 | ... |
-| **총점** | **X/10** | |
+| **Weighted Total** | **X/10** | |
+
+### Console/Build Warnings
+- [list or "None"]
+
+### Interaction States
+- Screen A: loading [Y/N], error [Y/N], empty [Y/N]
+- Screen B: loading [Y/N], error [Y/N], empty [Y/N]
+...
+
+### Responsive Layout
+- [findings]
+
+## Phase 5.3: Edge Cases (if reached)
+### Simulator Screenshots
+- [available / not available]
+- [screenshot analysis findings]
+
+### Agent Team Results
+| Agent | Result | Key Findings |
+|-------|--------|-------------|
+| Component Tester | [PASS/FAIL] | ... |
+| E2E Flow Tester | [PASS/FAIL] | ... |
+| Edge Case Tester | [PASS/FAIL] | ... |
+| Code Quality Inspector | [PASS/FAIL] | ... |
+| Test Case Generator | [PASS/FAIL] | ... |
+| Adversarial Reviewer | [PASS/FAIL] | ... |
 
 ## Bugs Found
-1. **[critical]** [설명] — [파일:라인]
-2. **[major]** [설명] — [파일:라인]
-
-## Stubs Found
-- [목록]
+1. **[critical]** [description] — [file:line]
+2. **[major]** [description] — [file:line]
+3. **[minor]** [description] — [file:line]
 
 ## Reasoning
-[PASS/FAIL 종합 근거]
+[Comprehensive justification for the PASS/FAIL judgment]
+
+## Fix Instructions (if FAIL)
+[Ordered list of specific fixes the Generator must make, with file paths and expected changes]
 ```
 
 ## State Update
 
-PASS:
+### On PASS (all required phases complete):
 ```yaml
 current_phase: admob
 next_role: rn-harness-admob
 ```
 
-FAIL:
+### On FAIL:
 ```yaml
 next_role: rn-harness-generator
 current_round: N+1
 ```
 
+### On Phase Progression (e.g., 5.1 PASS → 5.2):
+The orchestrator advances the QA sub-phase. The evaluator is re-invoked for the next phase.
+
+---
+
 ## HARD GATES
 
-- 코드 리뷰만으로 PASS 판정 금지 — 반드시 명령 실행
-- Generator의 자체 평가("38/38 DONE") 무시 — 독립 검증
-- typecheck/lint/test 실행 없이 판정 금지
-- NativeWind 설정 미검증 시 진행 금지
-- 스텁 발견 시 자동 FAIL
-- `max_rounds` 도달 시 현재 상태 기준 강제 판정
+These rules are absolute and cannot be overridden:
+
+1. **No code-review-only PASS** — Commands MUST be executed before judgment
+2. **Ignore Generator self-assessment** — "38/38 DONE" means nothing. Verify independently.
+3. **No judgment without typecheck/lint/test execution** — Run all three, always
+4. **No progression without NativeWind verification** — Gate blocks all phases
+5. **Stub detected = automatic FAIL** — No exceptions
+6. **`max_rounds` reached = forced judgment** — Evaluate current state as-is
+7. **Phase order is mandatory** — Cannot skip to 5.2 without 5.1 PASS, cannot skip to 5.3 without 5.2 PASS
+8. **Agent team disagreement = FAIL** — If ANY of the 6 agents in Phase 5.3 returns FAIL, the phase FAILS
+9. **Screenshots are evidence** — When simulator screenshots are available, they MUST be analyzed before judgment

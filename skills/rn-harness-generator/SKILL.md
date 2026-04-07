@@ -252,23 +252,71 @@ src/
 - 공통 컴포넌트 (Button, Card, Input, Typography)
 - 공통 타입 (IApiError, IApiResponse, TPagination)
 
-#### Step 5: Feature/Entity 구현
+---
 
-PRD 순서대로:
-1. 타입 정의 (Interface `I` prefix, Type `T` prefix, Enum `E` prefix)
-2. API 함수 구현
-3. TanStack Query hooks 작성
-4. Zustand store (필요시)
-5. barrel export (index.ts)
+### Subdivided Implementation (3-Phase Pattern)
 
-#### Step 6: 화면 구현
+Step 5~6은 한 번에 구현하지 않고 **3개 서브 페이즈**로 나누어 순차 진행한다.
+각 서브 페이즈 완료 후 반드시 Quick QA 게이트를 통과해야 다음으로 진행한다.
 
-Expo Router 파일 기반 라우팅:
-- 모든 화면 `SafeAreaView` 필수
-- NativeWind `className`만 사용
-- 로딩/에러/빈 상태 처리
-- 리스트는 FlashList 사용
-- 폼은 React Hook Form + Zod
+#### Step 5a: Feature/Entity Scaffolding (Sub-phase 4a)
+
+PRD의 모든 feature와 entity에 대해 디렉토리 구조와 타입을 먼저 생성:
+
+1. FSD 모듈 디렉토리 생성 (features/{name}/, entities/{name}/)
+2. TypeScript 타입/인터페이스 정의 (Interface `I` prefix, Type `T` prefix, Enum `E` prefix)
+3. barrel export 생성 (index.ts)
+4. Zustand store 설정 (필요시)
+
+**Quick QA Gate:**
+```bash
+npm run typecheck && npm run lint
+```
+
+**Spec Checkbox Update:** `docs/specs/` 디렉토리가 존재하면 완료된 항목의 체크박스를 업데이트한다 (`- [ ]` → `- [x]`).
+
+#### Step 5b: API Integration (Sub-phase 4b)
+
+Shared 레이어의 API 클라이언트를 기반으로 각 feature/entity의 API를 구현:
+
+1. Axios 클라이언트 설정 (인터셉터, 토큰 리프레시) — shared/api/client.ts
+2. API 함수 구현 — features/{name}/api/{name}.api.ts
+3. TanStack Query hooks 작성 — features/{name}/hooks/use-{name}.ts
+
+**Quick QA Gate:**
+```bash
+npm run typecheck && npm run lint
+```
+
+**Spec Checkbox Update:** `docs/specs/` 디렉토리가 존재하면 완료된 항목의 체크박스를 업데이트한다 (`- [ ]` → `- [x]`).
+
+#### Step 5c: Screen/UI Development (Sub-phase 4c)
+
+Feature hooks를 화면에 연결하고 전체 UI를 구현:
+
+1. Expo Router 파일 기반 라우팅으로 화면 구현
+2. **모든 화면 `SafeAreaView` 필수**
+3. NativeWind `className`만 사용 (inline style 금지)
+4. Feature hooks를 화면에 연결
+5. 로딩/에러/빈 상태 처리
+6. 리스트는 **FlashList** 사용 (ScrollView로 리스트 렌더링 금지)
+7. 폼은 **React Hook Form + Zod** 사용
+
+**Quick QA Gate:**
+```bash
+npm run typecheck && npm run lint
+```
+
+**Spec Checkbox Update:** `docs/specs/` 디렉토리가 존재하면 완료된 항목의 체크박스를 업데이트한다 (`- [ ]` → `- [x]`).
+
+---
+
+**HARD GATE**: 각 서브 페이즈의 `typecheck + lint` 게이트를 통과하지 못하면 다음 서브 페이즈로 진행 금지. 에러를 먼저 수정한 후 진행한다.
+
+#### Step 6: (Reserved — covered by Step 5a/5b/5c above)
+
+> 기존 Step 5 (Feature/Entity 구현)와 Step 6 (화면 구현)은 위의 서브 페이즈 패턴으로 대체되었다.
+> 이 패턴은 react-native-fsd-agent-template에서 검증된 방식으로, 각 단계에서 타입 안전성을 확보한 후 다음 단계로 진행하여 에러 전파를 최소화한다.
 
 #### Step 7: 테스트 작성
 

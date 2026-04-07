@@ -148,18 +148,28 @@ git commit -m "chore: bootstrap harness pipeline"
 파이프라인 Phase 순서:
 
 ```
-1. Research  → Skill("rn-harness-research")    # 시장 조사
-2. Plan      → Skill("rn-harness-plan")        # 기획/PRD
-3. Design    → Skill("rn-harness-design")      # 디자인 시스템
-4. Contract  → Skill("rn-harness-contract")    # 완료 기준 협상
-5. Generator → Skill("rn-harness-generator")   # 앱 빌드
-6. Evaluator → Skill("rn-harness-evaluator")   # QA
-   ↳ FAIL → Generator로 돌아가 수정 (라운드 반복)
-   ↳ PASS → 다음 Phase
-7. AdMob     → Skill("rn-harness-admob")       # 광고 통합
-8. Build     → Skill("rn-harness-build")       # EAS 빌드
-9. Screenshot→ Skill("rn-harness-screenshot")  # 스토어 스크린샷
-10. Submit   → Skill("rn-harness-submit")      # 스토어 제출
+ 1. Research   → Skill("rn-harness-research")     # Market research / idea discovery
+ 2. Plan       → Skill("rn-harness-plan")         # PRD
+ 2.5 Spec      → Skill("rn-harness-spec")         # Task breakdown with checkboxes
+ 3. Design     → Skill("rn-harness-design")       # Design system (NativeWind)
+ 4. Contract   → Skill("rn-harness-contract")     # Completion criteria negotiation
+ 5. Generator  → Skill("rn-harness-generator")    # Build app (3 sub-phases)
+ 6. Evaluator  → 3-Phase Progressive QA:
+    6.1 Functional → Skill("rn-harness-evaluator") # Does it WORK?
+        ↳ FAIL → Generator fix → re-evaluate (repeat)
+        ↳ PASS → Phase 6.2
+    6.2 Quality    → Skill("rn-harness-evaluator") # Is it GOOD?
+        ↳ FAIL → Generator fix → re-evaluate (repeat)
+        ↳ PASS → Phase 6.3
+    6.3 Edge Cases → Skill("rn-harness-evaluator") # Can it SURVIVE?
+        ↳ 6 parallel Agent Team + simulator screenshots
+        ↳ FAIL → Generator fix → re-evaluate (repeat)
+        ↳ PASS → Next phase
+ 7. AdMob      → Skill("rn-harness-admob")        # Smart ad placement
+ 8. Build      → Skill("rn-harness-build")        # EAS Build
+ 9. Screenshot → Skill("rn-harness-screenshot")   # Store screenshots (Maestro)
+10. Submit     → Skill("rn-harness-submit")       # App Store + Google Play
+11. Retro      → Skill("rn-harness-retro")        # Pipeline retrospective (optional)
 ```
 
 각 Phase 실행 후:
@@ -173,10 +183,17 @@ git commit -m "chore: bootstrap harness pipeline"
 - Agent subprocess로 실행 (컨텍스트 리셋)
 - 이전 Phase 산출물은 파일로 핸드오프
 
-**Generator↔Evaluator 루프:**
-- Round 1: Generator 빌드 → Evaluator QA
-- Round 2+: Generator가 피드백 기반 수정 → Evaluator 재검증
-- `max_rounds` 도달 시 강제 PASS 후 다음 Phase
+**Generator↔Evaluator 3-Phase QA Loop:**
+- Phase 6.1 (Functional): typecheck, lint, FSD, contract criteria
+  - FAIL → Generator fixes → re-evaluate (repeat per phase)
+  - PASS → advance to Phase 6.2
+- Phase 6.2 (Quality): design 4-axis, interaction states, warnings
+  - FAIL → Generator fixes → re-evaluate
+  - PASS → advance to Phase 6.3
+- Phase 6.3 (Edge Cases): 6 parallel Agent Team + simulator screenshots
+  - FAIL → Generator fixes → re-evaluate
+  - PASS → advance to Phase 7
+- `max_rounds` per QA phase → force advance to next phase
 
 **PAUSE 처리:**
 - 수동 작업 필요 시 (AdMob, Android Play Console)

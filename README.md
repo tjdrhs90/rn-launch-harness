@@ -48,31 +48,42 @@ claude plugins install rn-launch-harness@rn-launch-harness
  Phase 2: Planning (PRD)
     |  User stories, Expo Router structure, FSD module map, API design
     v
+ Phase 2.5: Spec Planning
+    |  Break PRD into file-level task checklists (docs/specs/)
+    v
  Phase 3: Design System
     |  NativeWind theme, colors/typography, components, Light/Dark
     v
  Phase 4: Contract Negotiation
     |  Generator↔Evaluator agree on 15-30 completion criteria
     v
- Phase 5: Build & QA Loop
-    |  Generator: Build entire React Native + Expo app
-    |  Evaluator: typecheck, lint, FSD validation, UX verification
-    |  FAIL → Generator fixes → Evaluator re-tests (repeat)
-    |  PASS → Next phase
+ Phase 5: Build (3 sub-phases)
+    |  5a: Feature/Entity scaffolding → Quick QA gate
+    |  5b: API integration (Axios, TanStack Query) → Quick QA gate
+    |  5c: Screen/UI development (Expo Router, NativeWind) → Quick QA gate
     v
- Phase 6: AdMob Integration
-    |  Guide ad unit creation → User creates manually → ID input → Code injection
-    |  ATT (App Tracking Transparency) permission included
+ Phase 6: 3-Phase Progressive QA
+    |  6.1 Functional — Does it WORK? (typecheck, lint, contract criteria)
+    |  6.2 Quality — Is it GOOD? (design 4-axis, interaction states)
+    |  6.3 Edge Cases — Can it SURVIVE? (6 parallel Agent Team + simulator)
+    |  Each phase: FAIL → Generator fixes → re-evaluate (repeat)
     v
- Phase 7: EAS Build
+ Phase 7: AdMob Integration
+    |  Smart ad placement analysis → User creates ad units → Code injection
+    |  Banners on all screens (except login/payment), interstitial, rewarded
+    v
+ Phase 8: EAS Build
     |  iOS (.ipa) + Android (.aab) production builds
     v
- Phase 8: Store Screenshots
-    |  Maestro auto-capture + metadata generation
+ Phase 9: Store Screenshots
+    |  Maestro auto-capture on simulator + metadata generation
     v
- Phase 9: Store Submission
+ Phase 10: Store Submission
     |  iOS: App Store Connect API (fully automated)
     |  Android: Play Console manual steps → API automated (pause & resume)
+    v
+ Phase 11: Retrospective (optional)
+    |  Evaluate pipeline against Anthropic's 9 harness principles
     v
  DONE — Both stores under review
 ```
@@ -285,14 +296,16 @@ AdMob API does not support ad unit creation:
 | `/rn-harness` | user-invoked | Start pipeline / resume / status |
 | `rn-harness-research` | role | Market research + idea discovery |
 | `rn-harness-plan` | role | PRD generation |
+| `rn-harness-spec` | role | Task breakdown into file-level checklists |
 | `rn-harness-design` | role | Design system |
 | `rn-harness-contract` | role | Completion criteria negotiation |
-| `rn-harness-generator` | role | React Native app build |
-| `rn-harness-evaluator` | role | QA verification (PASS/FAIL) |
-| `rn-harness-admob` | role | AdMob ad integration |
+| `rn-harness-generator` | role | Build app (3 sub-phases: scaffold → API → UI) |
+| `rn-harness-evaluator` | role | 3-phase QA (functional → quality → edge cases) |
+| `rn-harness-admob` | role | Smart AdMob ad placement |
 | `rn-harness-build` | role | EAS Build |
 | `rn-harness-screenshot` | role | Maestro screenshots |
 | `rn-harness-submit` | role | App Store + Google Play submission |
+| `rn-harness-retro` | user-invoked | Pipeline retrospective (Anthropic principles) |
 | `rn-harness-status` | utility | Pipeline status |
 | `rn-harness-resume` | utility | Pipeline resume |
 
