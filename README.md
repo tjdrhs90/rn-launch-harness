@@ -1,10 +1,14 @@
 # RN Launch Harness
 
-React Native 모바일 앱을 **아이디어부터 스토어 출시까지** 자동화하는 Claude Code 플러그인.
+A Claude Code plugin that automates the **entire React Native mobile app lifecycle** — from market research to App Store & Google Play submission.
 
-한 줄 명령으로 시장 조사, 기획, 디자인, 개발, AdMob 광고 통합, EAS 빌드, 스토어 스크린샷 촬영, App Store/Google Play 심사 제출까지 전체 파이프라인을 실행합니다.
+One command takes you from idea to store review. Market research, planning, design system, development, AdMob integration, EAS build, store screenshots, and submission — all automated.
 
-Inspired by [Anthropic's Harness Design for Long-Running Apps](https://www.anthropic.com/engineering/rn-harness-design-long-running-apps).
+> **No idea yet?** Run without arguments — the harness researches App Store/Google Play top charts and recommends solo-developer-friendly apps that need no backend.
+
+Inspired by [Anthropic's Harness Design for Long-Running Apps](https://www.anthropic.com/engineering/harness-design-long-running-apps).
+
+[한국어](./README.ko.md)
 
 ## Install
 
@@ -16,61 +20,61 @@ claude plugins install rn-launch-harness@rn-launch-harness
 ## Quick Start
 
 ```bash
-# 아이디어가 있을 때
-/rn-harness "일일 커피 구독 관리 앱"
+# With an idea
+/rn-harness "daily coffee subscription tracker"
 
-# 아이디어가 없을 때 — 스토어 탑차트 조사 → 1인개발 가능한 앱 추천
+# No idea — discover from store top charts
 /rn-harness
 
-# 참고 사이트/이미지 포함
-/rn-harness "캘린더 앱" --ref https://cal.com
+# With a reference site/image
+/rn-harness "calendar app" --ref https://cal.com
 
-# 진행 상황 확인
+# Check progress
 /rn-harness --status
 
-# 레이트 리밋 후 재개
+# Resume after rate limit
 /rn-harness --resume
 ```
 
 ## Pipeline
 
 ```
-/rn-harness "앱 아이디어"
+/rn-harness "app idea"
     |
     v
- Phase 1: 시장 조사 (WebSearch)
-    |  경쟁 앱 분석, 차별화 전략, 수익화 모델
+ Phase 1: Market Research (WebSearch)
+    |  Top chart analysis, competitor review, monetization strategy
     v
- Phase 2: 기획 (PRD)
-    |  유저 스토리, Expo Router 화면 구조, FSD 모듈 맵, API 설계
+ Phase 2: Planning (PRD)
+    |  User stories, Expo Router structure, FSD module map, API design
     v
- Phase 3: 디자인 시스템
-    |  NativeWind 테마, 컬러/타이포, 컴포넌트, Light/Dark
+ Phase 3: Design System
+    |  NativeWind theme, colors/typography, components, Light/Dark
     v
- Phase 4: 계약 협상
-    |  Generator↔Evaluator 완료 기준 합의 (15~30개 기준)
+ Phase 4: Contract Negotiation
+    |  Generator↔Evaluator agree on 15-30 completion criteria
     v
- Phase 5: 빌드 & QA 루프
-    |  Generator: React Native + Expo 앱 전체 빌드
-    |  Evaluator: typecheck, lint, FSD 검증, UX 검증
-    |  FAIL → Generator 수정 → Evaluator 재검증 (반복)
-    |  PASS → 다음 Phase
+ Phase 5: Build & QA Loop
+    |  Generator: Build entire React Native + Expo app
+    |  Evaluator: typecheck, lint, FSD validation, UX verification
+    |  FAIL → Generator fixes → Evaluator re-tests (repeat)
+    |  PASS → Next phase
     v
- Phase 6: AdMob 광고 통합
-    |  광고 단위 목록 안내 → 사용자 수동 생성 → ID 입력 → 코드 삽입
-    |  ATT (App Tracking Transparency) 권한 요청 포함
+ Phase 6: AdMob Integration
+    |  Guide ad unit creation → User creates manually → ID input → Code injection
+    |  ATT (App Tracking Transparency) permission included
     v
  Phase 7: EAS Build
-    |  iOS (.ipa) + Android (.aab) 프로덕션 빌드
+    |  iOS (.ipa) + Android (.aab) production builds
     v
- Phase 8: 스토어 스크린샷
-    |  Maestro 자동 촬영 + 메타데이터 생성
+ Phase 8: Store Screenshots
+    |  Maestro auto-capture + metadata generation
     v
- Phase 9: 스토어 제출
-    |  iOS: App Store Connect API (완전 자동)
-    |  Android: Play Console 수동 작업 → API 자동 (일부 수동)
+ Phase 9: Store Submission
+    |  iOS: App Store Connect API (fully automated)
+    |  Android: Play Console manual steps → API automated (pause & resume)
     v
- DONE — 양 스토어 심사 대기
+ DONE — Both stores under review
 ```
 
 ## Requirements
@@ -78,150 +82,116 @@ claude plugins install rn-launch-harness@rn-launch-harness
 - **Claude Code** (latest)
 - **Node.js** 20+
 - **EAS CLI** (`npm install -g eas-cli`)
-- **Maestro** (스크린샷용, 선택) — `curl -Ls "https://get.maestro.mobile.dev" | bash`
-- **gh CLI** (GitHub 연동)
+- **Maestro** (screenshots, optional) — `curl -Ls "https://get.maestro.mobile.dev" | bash`
+- **gh CLI** (GitHub integration)
 
-## Setup — 키 파일 & 환경 변수
+## Setup — Keys & Environment Variables
 
-### 1. 프로젝트 디렉토리 구조
+### Project Directory Structure
 
 ```
 my-app/
-├── credentials/              # 키 파일 (git에 올라가지 않음)
+├── credentials/              # Key files (NOT committed to git)
 │   ├── asc-api-key.p8        # App Store Connect API Key
 │   └── google-play-sa.json   # Google Play Service Account
-├── .env                      # 환경 변수 (git에 올라가지 않음)
-├── .env.example              # 환경 변수 템플릿
-└── .gitignore                # credentials/, .env 제외
+├── .env                      # Environment variables (NOT committed)
+├── .env.example              # Template (committed)
+└── .gitignore                # Excludes credentials/, .env
 ```
 
-### 2. 환경 변수 (.env)
-
-프로젝트 루트에 `.env` 파일 생성:
+### Environment Variables (.env)
 
 ```bash
-# ──────────────────────────────────
-# App Store Connect API (iOS 제출)
-# ──────────────────────────────────
-ASC_KEY_ID=XXXXXXXXXX              # API Key ID (10자리)
-ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  # Issuer ID (UUID)
-ASC_PRIVATE_KEY_PATH=./credentials/asc-api-key.p8   # .p8 파일 경로
+# ── App Store Connect API (iOS submission) ──
+ASC_KEY_ID=XXXXXXXXXX
+ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+ASC_PRIVATE_KEY_PATH=./credentials/asc-api-key.p8
 
-# ──────────────────────────────────
-# Google Play Developer API (Android 제출)
-# ──────────────────────────────────
-GOOGLE_PLAY_SA_JSON=./credentials/google-play-sa.json  # Service Account JSON 경로
+# ── Google Play Developer API (Android submission) ──
+GOOGLE_PLAY_SA_JSON=./credentials/google-play-sa.json
 
-# ──────────────────────────────────
-# AdMob (광고)
-# ──────────────────────────────────
-ADMOB_IOS_APP_ID=ca-app-pub-XXXX~YYYY       # AdMob iOS App ID
-ADMOB_ANDROID_APP_ID=ca-app-pub-XXXX~ZZZZ   # AdMob Android App ID
-# Ad Unit ID는 파이프라인 Phase 6에서 입력
+# ── AdMob ──
+ADMOB_IOS_APP_ID=ca-app-pub-XXXX~YYYY
+ADMOB_ANDROID_APP_ID=ca-app-pub-XXXX~ZZZZ
 
-# ──────────────────────────────────
-# AI 이미지 생성 (스토어 에셋용, 선택)
-# ──────────────────────────────────
-GEMINI_API_KEY=                     # Google Gemini API Key
-# 앱 아이콘, Feature Graphic, 스크린샷 프레임 등 생성에 사용
+# ── AI Image Generation (optional, for store assets) ──
+GEMINI_API_KEY=
 
-# ──────────────────────────────────
-# EAS (Expo Application Services)
-# ──────────────────────────────────
-EXPO_TOKEN=                         # Expo 액세스 토큰 (선택, CI용)
+# ── EAS (optional, for CI) ──
+EXPO_TOKEN=
 ```
 
-### 3. 키 파일 발급 가이드
+### Key Provisioning Guide
 
 #### App Store Connect API Key (.p8)
 
-1. [App Store Connect](https://appstoreconnect.apple.com) 접속
+1. Go to [App Store Connect](https://appstoreconnect.apple.com)
 2. **Users and Access** → **Integrations** → **App Store Connect API**
-3. **Team Keys** 탭 → **Generate API Key**
-4. 이름 입력, 권한: **Admin** 또는 **App Manager**
-5. .p8 파일 다운로드 → `credentials/asc-api-key.p8`에 저장
-6. **Key ID** (10자리)와 **Issuer ID** (UUID)를 `.env`에 기록
+3. **Team Keys** tab → **Generate API Key**
+4. Set name, role: **Admin** or **App Manager**
+5. Download `.p8` file → save to `credentials/asc-api-key.p8`
+6. Record **Key ID** and **Issuer ID** in `.env`
 
-> .p8 파일은 **한 번만 다운로드 가능**합니다. 분실 시 새로 발급해야 합니다.
+> The .p8 file can only be downloaded **once**. If lost, you must generate a new key.
 
 #### Google Play Service Account (.json)
 
-1. [Google Play Console](https://play.google.com/console) 접속
+1. Go to [Google Play Console](https://play.google.com/console)
 2. **Settings** → **API access**
-3. **Create new service account** 또는 Google Cloud Console에서 생성
-4. **역할**: Service Account User + Android Management → Release Manager
-5. Google Cloud Console에서 해당 Service Account의 **키 생성** → JSON
-6. JSON 파일 → `credentials/google-play-sa.json`에 저장
+3. Create a service account (or via Google Cloud Console)
+4. **Role**: Release Manager
+5. Generate a JSON key → save to `credentials/google-play-sa.json`
 
-#### Google Gemini API Key (선택 — AI 이미지 생성)
+#### Google Gemini API Key (optional — AI image generation)
 
-1. [Google AI Studio](https://aistudio.google.com/apikey) 접속
-2. **Create API Key** 클릭
-3. 키 복사 → `.env`의 `GEMINI_API_KEY`에 기록
-4. 앱 아이콘, Feature Graphic, 프로모션 이미지 등 자동 생성에 사용
+1. Go to [Google AI Studio](https://aistudio.google.com/apikey)
+2. **Create API Key**
+3. Copy to `.env` `GEMINI_API_KEY`
+4. Used for app icon, Feature Graphic, promotional images
 
 #### AdMob App ID
 
-1. [AdMob](https://apps.admob.com) 접속
-2. **Apps** → **Add App** (iOS + Android 각각)
-3. App ID (`ca-app-pub-XXXX~YYYY`) → `.env`에 기록
-4. 광고 단위는 Phase 6에서 안내에 따라 수동 생성
+1. Go to [AdMob](https://apps.admob.com)
+2. **Apps** → **Add App** (iOS + Android separately)
+3. Record App ID (`ca-app-pub-XXXX~YYYY`) in `.env`
+4. Ad units are created manually in Phase 6 (guided by the pipeline)
 
-### 4. .gitignore (필수)
+### Required vs Optional
 
-프로젝트 생성 시 자동으로 추가됨:
+| Item | Required? | Without it? |
+|------|-----------|-------------|
+| ASC API Key (.p8) | Phase 9 | No auto iOS submission → manual EAS Submit |
+| Google Play SA (.json) | Phase 9 | No Android API calls → manual Play Console |
+| AdMob App ID | Phase 6 | Skip with `--skip-admob` |
+| Gemini API Key | Optional | Prepare images manually (Figma, Canva, etc.) |
+| EAS Token | Optional (CI) | Use `eas login` interactive login instead |
 
-```gitignore
-# Credentials — 절대 git에 올리지 않음
-credentials/
-*.p8
-*.p12
-*-sa.json
-service-account*.json
-
-# Environment
-.env
-.env.local
-.env.*.local
-```
-
-### 5. 필수 vs 선택
-
-| 항목 | 필수 여부 | 없으면? |
-|------|----------|---------|
-| ASC API Key (.p8) | Phase 9에서 필요 | iOS 자동 제출 불가 → 수동 EAS Submit |
-| Google Play SA (.json) | Phase 9에서 필요 | Android API 호출 불가 → 수동 Play Console |
-| AdMob App ID | Phase 6에서 필요 | `--skip-admob`으로 건너뛰기 가능 |
-| Gemini API Key | 선택 | 이미지 직접 준비 (Figma, Canva 등) |
-| EAS Token | 선택 (CI용) | `eas login` 대화형 로그인으로 대체 |
-
-> **Phase 1~5 (시장조사~QA)는 키 파일 없이도 실행 가능합니다.**
-> 키는 Phase 6 이후에만 필요하므로 개발 먼저 하고 나중에 설정해도 됩니다.
+> **Phases 1–5 (research through QA) work without any keys.** You can develop first, add keys later.
 
 ## Architecture
 
 ### Key Design Principles
 
-| 원칙 | 설명 |
-|------|------|
-| **Generator-Evaluator 분리** | 빌드하는 에이전트와 평가하는 에이전트를 분리하여 자기평가 편향 제거 |
-| **Agent subprocess per phase** | 각 Phase를 독립 에이전트로 실행 (컨텍스트 리셋) |
-| **파일 기반 핸드오프** | 에이전트 간 통신은 `docs/harness/` 파일로 수행 |
-| **Hard Threshold** | 주관적 판단을 구체적 PASS/FAIL 기준으로 변환 |
-| **Contract Negotiation** | 빌드 전 Generator↔Evaluator 완료 기준 합의 |
-| **Pause & Resume** | 수동 작업 필요 시 대기, 완료 후 자동 재개 |
+| Principle | Description |
+|-----------|-------------|
+| **Generator-Evaluator Separation** | Separate build agent from evaluation agent to eliminate self-assessment bias |
+| **Agent Subprocess per Phase** | Each phase runs as an isolated agent (context reset) |
+| **File-based Handoff** | Inter-agent communication via `docs/harness/` files |
+| **Hard Threshold** | Subjective judgments converted to concrete PASS/FAIL criteria |
+| **Contract Negotiation** | Generator↔Evaluator agree on completion criteria before any code is written |
+| **Pause & Resume** | Pipeline pauses for manual steps, resumes after user confirmation |
 
 ### Hard Gates
 
-| 항목 | 임계값 |
-|------|--------|
-| TypeScript 에러 | 0개 |
-| ESLint 에러 | 0개 |
-| `any` 타입 사용 | 0개 |
-| FSD 레이어 위반 | 0건 |
-| SafeAreaView 누락 | 0건 |
-| 스텁/placeholder | 0건 |
-| 디자인 4축 총점 | 7/10 미만 = FAIL |
+| Item | Threshold |
+|------|-----------|
+| TypeScript errors | 0 |
+| ESLint errors | 0 |
+| `any` type usage | 0 |
+| FSD layer violations | 0 |
+| Missing SafeAreaView | 0 |
+| Stubs/placeholders | 0 |
+| Design 4-axis score | < 7/10 = FAIL |
 
 ### Tech Stack
 
@@ -247,104 +217,104 @@ service-account*.json
 app (routing) → widgets → features → entities → shared
 ```
 
-상위 레이어는 하위 레이어만 참조 가능. 동일 레벨 간 직접 참조 금지.
+Upper layers may only reference lower layers. No cross-layer imports at the same level.
 
 ## Pipeline Output
 
 ```
 docs/harness/
-├── specs/           # 시장 조사 결과
-├── plans/           # PRD + 디자인 시스템
-├── contract.md      # Generator↔Evaluator 합의 기준
-├── handoff/         # Generator → Evaluator 핸드오프
-├── feedback/        # Evaluator 피드백
-├── store-assets/    # 스토어 스크린샷 + 메타데이터
-├── screenshots/     # QA 스크린샷
-├── references/      # 참고 자료
-├── config.md        # 파이프라인 설정
-├── state.md         # 파이프라인 상태
-├── build-log.md     # 라운드 결과 기록
-└── pipeline-log.md  # 이벤트 로그
+├── specs/           # Market research results
+├── plans/           # PRD + design system
+├── contract.md      # Generator↔Evaluator agreed criteria
+├── handoff/         # Generator → Evaluator handoff per round
+├── feedback/        # Evaluator feedback per round
+├── store-assets/    # Store screenshots + metadata
+├── screenshots/     # QA screenshots
+├── references/      # Reference materials
+├── config.md        # Pipeline configuration
+├── state.md         # Pipeline state
+├── build-log.md     # Round results
+└── pipeline-log.md  # Event log
 ```
 
 ## Store Submission Details
 
-### iOS (완전 자동)
+### iOS (Fully Automated)
 
-App Store Connect API를 통해 전체 자동화:
-1. Bundle ID 등록 → 앱 레코드 생성
-2. 메타데이터 설정 (한국어 기본)
-3. 스크린샷 업로드
-4. EAS Submit으로 빌드 업로드
-5. 빌드 연결 → 심사 제출
+End-to-end automation via App Store Connect API:
+1. Register Bundle ID → Create app record
+2. Set metadata (Korean default locale)
+3. Upload screenshots
+4. Upload build via EAS Submit
+5. Link build → Submit for review
 
-**자동 설정:**
-- 방향: Portrait only
-- iPad 지원: 제거
-- 암호화: No (ITSAppUsesNonExemptEncryption)
-- ATT 권한 요청 (AdMob용, 2초 딜레이)
-- Accessibility Bundle Name 자동 생성
+**Auto-configured:**
+- Orientation: Portrait only
+- iPad support: Removed
+- Encryption: No (`ITSAppUsesNonExemptEncryption`)
+- ATT permission request (for AdMob, with 2s delay)
+- Accessibility Bundle Name auto-generated
 
-### Android (일부 수동)
+### Android (Partially Manual)
 
-Play Console에서 수동 필요:
-1. 앱 생성
-2. IARC 콘텐츠 등급 설문
-3. 데이터 안전 섹션
-4. 대상 연령 + 광고 포함 신고
+Manual steps required in Play Console:
+1. Create app
+2. IARC content rating questionnaire
+3. Data safety section
+4. Target audience + ads declaration
 
-수동 완료 후 API 자동:
-- 스토어 등록정보 업데이트
-- AAB 업로드
-- 트랙 릴리즈
+After manual steps, API automated:
+- Store listing update
+- AAB upload
+- Track release
 
-### AdMob (수동 생성 → 자동 통합)
+> The pipeline **pauses and guides you** through manual steps, then resumes automatically.
 
-AdMob API는 광고 단위 생성을 지원하지 않음:
-- 파이프라인이 필요한 광고 형식/위치 목록을 안내
-- 사용자가 AdMob 콘솔에서 수동 생성
-- Ad Unit ID 입력 → 코드에 자동 삽입
-- `skip` 시 Google 테스트 광고 ID로 개발, 출시 전 교체
+### AdMob (Manual Creation → Auto Integration)
+
+AdMob API does not support ad unit creation:
+- Pipeline lists required ad formats/placements
+- User creates ad units manually in AdMob console
+- Enter Ad Unit IDs → automatically injected into code
+- `skip` uses Google test ad IDs for development, replace before release
 
 ## Skills Reference
 
 | Skill | Type | Description |
 |-------|------|-------------|
-| `/rn-harness` | user-invoked | 파이프라인 시작/재개/상태 |
-| `/rn-harness --status` | user-invoked | 진행 상황 표시 |
-| `/rn-harness --resume` | user-invoked | 일시정지 후 재개 |
-| `rn-harness-research` | role | 시장 조사 + 경쟁 분석 |
-| `rn-harness-plan` | role | PRD 작성 |
-| `rn-harness-design` | role | 디자인 시스템 |
-| `rn-harness-contract` | role | 완료 기준 협상 |
-| `rn-harness-generator` | role | React Native 앱 빌드 |
-| `rn-harness-evaluator` | role | QA 검증 (PASS/FAIL) |
-| `rn-harness-admob` | role | AdMob 광고 통합 |
+| `/rn-harness` | user-invoked | Start pipeline / resume / status |
+| `rn-harness-research` | role | Market research + idea discovery |
+| `rn-harness-plan` | role | PRD generation |
+| `rn-harness-design` | role | Design system |
+| `rn-harness-contract` | role | Completion criteria negotiation |
+| `rn-harness-generator` | role | React Native app build |
+| `rn-harness-evaluator` | role | QA verification (PASS/FAIL) |
+| `rn-harness-admob` | role | AdMob ad integration |
 | `rn-harness-build` | role | EAS Build |
-| `rn-harness-screenshot` | role | Maestro 스크린샷 |
-| `rn-harness-submit` | role | App Store + Google Play 제출 |
-| `rn-harness-status` | utility | 파이프라인 상태 조회 |
-| `rn-harness-resume` | utility | 파이프라인 재개 |
+| `rn-harness-screenshot` | role | Maestro screenshots |
+| `rn-harness-submit` | role | App Store + Google Play submission |
+| `rn-harness-status` | utility | Pipeline status |
+| `rn-harness-resume` | utility | Pipeline resume |
 
 ## Configuration
 
-파이프라인 시작 시 자동 수집 + `docs/harness/config.md` 생성:
+Collected at pipeline start → saved to `docs/harness/config.md`:
 
 ```yaml
-app_idea: "커피 구독 앱"
+app_idea: "coffee subscription app"
 default_language: ko
-bundle_id: com.gonigon.coffee    # iOS/Android 동일
+bundle_id: com.company.appname    # Same for iOS/Android
 
 developer:
-  company_name: gonigon
+  company_name: company
   email: user@example.com
   privacy_url: https://example.com/privacy
   homepage_url: https://example.com
   copyright: "Copyright 2026. Name all rights reserved."
 
 ios_review:
-  first_name: Gildong
-  last_name: Hong
+  first_name: First
+  last_name: Last
   phone: "+821012345678"
 
 admob:
@@ -357,30 +327,31 @@ admob:
 ## Arguments
 
 ```bash
-/rn-harness "앱 설명"              # 새 파이프라인
-/rn-harness --resume               # 재개
-/rn-harness --status               # 상태 확인
-/rn-harness --status --verbose     # 상세 상태
-/rn-harness --rounds 5             # QA 최대 5라운드
-/rn-harness --ref https://...      # 참고 사이트
-/rn-harness --ref ./mockup.png     # 참고 이미지
-/rn-harness --skip-research        # 시장 조사 스킵
-/rn-harness --skip-admob           # AdMob 스킵
+/rn-harness "app description"      # New pipeline
+/rn-harness                         # Idea discovery mode
+/rn-harness --resume                # Resume paused pipeline
+/rn-harness --status                # Check status
+/rn-harness --status --verbose      # Detailed status
+/rn-harness --rounds 5              # Max 5 QA rounds
+/rn-harness --ref https://...       # Reference site
+/rn-harness --ref ./mockup.png      # Reference image
+/rn-harness --skip-research         # Skip market research
+/rn-harness --skip-admob            # Skip AdMob
 ```
 
 ## Auto-Resume
 
-레이트 리밋 발생 시:
-1. `hooks/stop-failure-handler.sh`가 자동 감지
+On rate limit:
+1. `hooks/stop-failure-handler.sh` detects the error
 2. `state.md` → `paused`
-3. macOS 알림 발송
-4. 5분 후 자동 재개 스케줄
+3. macOS notification sent
+4. Auto-resume scheduled in 5 minutes
 
 ## Credits
 
-- **[Anthropic's Harness Engineering](https://www.anthropic.com/engineering/rn-harness-design-long-running-apps)** — Generator-Evaluator 분리, 파일 핸드오프, 계약 협상, Hard Threshold
-- **[super-hype-harness](https://github.com/jae1jeong/super-hype-harness)** — 웹 앱 하네스 플러그인 구조
-- **[react-native-fsd-agent-template](https://github.com/seungmanchoi/react-native-fsd-agent-template)** — FSD 아키텍처, 모바일 에이전트 설계
+- **[Anthropic's Harness Engineering](https://www.anthropic.com/engineering/harness-design-long-running-apps)** — Generator-Evaluator separation, file-based handoff, contract negotiation, hard thresholds
+- **[super-hype-harness](https://github.com/jae1jeong/super-hype-harness)** — Web app harness plugin architecture
+- **[react-native-fsd-agent-template](https://github.com/seungmanchoi/react-native-fsd-agent-template)** — FSD architecture, mobile agent design
 
 ## License
 
