@@ -38,54 +38,39 @@ claude plugins install rn-launch-harness@rn-launch-harness
 
 ## 파이프라인
 
+### 기본 모드 (~$30-60, Claude Max 친화적)
+
 ```
 /rn-harness "앱 아이디어"
     |
-    v
- Phase 1: 시장 조사 (WebSearch)
-    |  탑 차트 분석, 경쟁 앱 리뷰, 수익화 전략
-    v
- Phase 2: 기획 (PRD)
-    |  유저 스토리, Expo Router 화면 구조, FSD 모듈 맵, API 설계
-    v
- Phase 2.5: 스펙 분해
-    |  PRD를 파일 단위 태스크 체크리스트로 분해 (docs/specs/)
-    v
- Phase 3: 디자인 시스템
-    |  NativeWind 테마, 컬러/타이포, 컴포넌트, Light/Dark
-    v
- Phase 4: 계약 협상
-    |  Generator↔Evaluator 완료 기준 합의 (15~30개 기준)
-    v
- Phase 5: 빌드 (3단계 서브 페이즈)
-    |  5a: Feature/Entity 스캐폴딩 → Quick QA 게이트
-    |  5b: API 연동 (Axios, TanStack Query) → Quick QA 게이트
-    |  5c: 스크린/UI 개발 (Expo Router, NativeWind) → Quick QA 게이트
-    v
- Phase 6: 3단계 점진적 QA
-    |  6.1 기능 검증 — 동작하는가? (typecheck, lint, 계약 기준)
-    |  6.2 품질 검증 — 좋은가? (디자인 4축, 인터랙션 상태)
-    |  6.3 엣지 케이스 — 살아남는가? (6개 병렬 Agent Team + 시뮬레이터)
-    |  각 Phase: FAIL → Generator 수정 → 재검증 (반복)
-    v
- Phase 7: AdMob 광고 통합
-    |  앱 분석 → 스마트 광고 배치 → 사용자 수동 생성 → 코드 삽입
-    |  배너 전 화면 (로그인/결제 제외), 전면, 리워드
-    v
- Phase 8: EAS Build
-    |  iOS (.ipa) + Android (.aab) 프로덕션 빌드
-    v
- Phase 9: 스토어 스크린샷
-    |  시뮬레이터에서 Maestro 자동 촬영 + 메타데이터 생성
-    v
- Phase 10: 스토어 제출
-    |  iOS: App Store Connect API (완전 자동)
-    |  Android: Play Console 수동 작업 → API 자동 (일시정지 & 재개)
-    v
- Phase 11: 회고 (선택)
-    |  Anthropic 9개 하네스 원칙 대비 파이프라인 평가
-    v
- DONE — 양 스토어 심사 대기
+ Phase 1: 시장 조사 → 경쟁 분석, 수익화
+ Phase 2: 기획 → PRD, 유저 스토리, FSD 모듈 맵
+ Phase 3: 디자인 시스템 → NativeWind 테마, 컴포넌트
+ Phase 4: 계약 → 1회 기준 작성 (협상 없음)
+ Phase 5: 빌드 (3단계)
+    |  5a: Feature/Entity 스캐폴딩 → Quick QA
+    |  5b: API 연동 → Quick QA
+    |  5c: 스크린/UI 개발 → Quick QA
+ Phase 6: QA — 기능 검증만 (typecheck, lint, FSD, 계약 기준)
+    |  FAIL → 수정 → 재검증 (최대 3라운드)
+ Phase 7: AdMob → 스마트 광고 배치 + 코드 삽입
+ Phase 8: EAS Build → iOS + Android
+ Phase 9: 스크린샷 → Maestro + 메타데이터
+ Phase 10: 스토어 제출 → ASC API + Google Play API
+```
+
+### --strict 모드 (~$100-160, 철저)
+
+```
+/rn-harness "앱 아이디어" --strict
+    |
+ + Phase 2.5: 스펙 분해 → 파일별 태스크 체크리스트
+ + Phase 4: 계약 → Generator↔Evaluator 다회 협상
+ + Phase 6: 3단계 점진적 QA
+    |  6.1 기능 검증 — 동작하는가?
+    |  6.2 품질 검증 — 좋은가? (디자인 4축)
+    |  6.3 엣지 케이스 — 살아남는가? (6개 Agent Team + 시뮬레이터)
+ + Phase 11: 회고 → Anthropic 원칙 평가
 ```
 
 ## 요구사항

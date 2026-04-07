@@ -22,11 +22,13 @@ Called by the orchestrator for Phase 5 (Evaluator). The orchestrator sets the **
 
 Read the `evaluator` field from `docs/harness/config.md` to determine the profile:
 
-| Profile | Behavior |
-|---------|----------|
-| `default` | Full 3-phase QA (5.1 → 5.2 → 5.3) |
-| `quick` | Phase 5.1 only (functional check). Skip design and edge cases. |
-| `strict` | All 3 phases with lower pass thresholds: Design 8+, ALL 6 edge-case teammates must PASS with zero warnings |
+| Profile | Behavior | When |
+|---------|----------|------|
+| `default` | **Phase 5.1 only** (functional check). Covers typecheck, lint, FSD, contract criteria. | Default mode — token efficient |
+| `full` | Full 3-phase QA (5.1 → 5.2 → 5.3) | `--strict` flag |
+| `strict` | All 3 phases with higher thresholds: Design 8+, ALL 6 Agent Team must PASS with zero warnings | `--strict` with extra rigor |
+
+**Default mode runs Phase 5.1 only.** This covers the most critical checks (typecheck 0 errors, lint 0, FSD compliance, contract criteria, stubs) at a fraction of the token cost. Phase 5.2 and 5.3 are only activated with `--strict`.
 
 If no `evaluator` field is found, use `default`.
 

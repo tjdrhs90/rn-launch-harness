@@ -38,54 +38,40 @@ claude plugins install rn-launch-harness@rn-launch-harness
 
 ## Pipeline
 
+### Default Mode (~$30-60, Claude Max friendly)
+
 ```
 /rn-harness "app idea"
     |
     v
- Phase 1: Market Research (WebSearch)
-    |  Top chart analysis, competitor review, monetization strategy
-    v
- Phase 2: Planning (PRD)
-    |  User stories, Expo Router structure, FSD module map, API design
-    v
- Phase 2.5: Spec Planning
-    |  Break PRD into file-level task checklists (docs/specs/)
-    v
- Phase 3: Design System
-    |  NativeWind theme, colors/typography, components, Light/Dark
-    v
- Phase 4: Contract Negotiation
-    |  Generator↔Evaluator agree on 15-30 completion criteria
-    v
+ Phase 1: Market Research → competitor analysis, monetization
+ Phase 2: Planning → PRD, user stories, FSD module map
+ Phase 3: Design System → NativeWind theme, components
+ Phase 4: Contract → 1-pass criteria (no multi-round negotiation)
  Phase 5: Build (3 sub-phases)
-    |  5a: Feature/Entity scaffolding → Quick QA gate
-    |  5b: API integration (Axios, TanStack Query) → Quick QA gate
-    |  5c: Screen/UI development (Expo Router, NativeWind) → Quick QA gate
-    v
- Phase 6: 3-Phase Progressive QA
-    |  6.1 Functional — Does it WORK? (typecheck, lint, contract criteria)
-    |  6.2 Quality — Is it GOOD? (design 4-axis, interaction states)
-    |  6.3 Edge Cases — Can it SURVIVE? (6 parallel Agent Team + simulator)
-    |  Each phase: FAIL → Generator fixes → re-evaluate (repeat)
-    v
- Phase 7: AdMob Integration
-    |  Smart ad placement analysis → User creates ad units → Code injection
-    |  Banners on all screens (except login/payment), interstitial, rewarded
-    v
- Phase 8: EAS Build
-    |  iOS (.ipa) + Android (.aab) production builds
-    v
- Phase 9: Store Screenshots
-    |  Maestro auto-capture on simulator + metadata generation
-    v
- Phase 10: Store Submission
-    |  iOS: App Store Connect API (fully automated)
-    |  Android: Play Console manual steps → API automated (pause & resume)
-    v
- Phase 11: Retrospective (optional)
-    |  Evaluate pipeline against Anthropic's 9 harness principles
-    v
- DONE — Both stores under review
+    |  5a: Feature/Entity scaffolding → Quick QA
+    |  5b: API integration → Quick QA
+    |  5c: Screen/UI development → Quick QA
+ Phase 6: QA — Functional only (typecheck, lint, FSD, contract)
+    |  FAIL → fix → re-evaluate (max 3 rounds)
+ Phase 7: AdMob → smart placement + code injection
+ Phase 8: EAS Build → iOS + Android
+ Phase 9: Screenshots → Maestro + metadata
+ Phase 10: Store Submission → ASC API + Google Play API
+```
+
+### --strict Mode (~$100-160, thorough)
+
+```
+/rn-harness "app idea" --strict
+    |
+ + Phase 2.5: Spec Planning → file-level task checklists
+ + Phase 4: Contract → multi-round Generator↔Evaluator negotiation
+ + Phase 6: 3-Phase Progressive QA
+    |  6.1 Functional — Does it WORK?
+    |  6.2 Quality — Is it GOOD? (design 4-axis scoring)
+    |  6.3 Edge Cases — Can it SURVIVE? (6 Agent Team + simulator)
+ + Phase 11: Retrospective → Anthropic principles evaluation
 ```
 
 ## Requirements
@@ -340,12 +326,14 @@ admob:
 ## Arguments
 
 ```bash
-/rn-harness "app description"      # New pipeline
+/rn-harness "app description"      # New pipeline (default mode)
 /rn-harness                         # Idea discovery mode
+/rn-harness "app" --strict          # Full 3-phase QA + Agent Team
+/rn-harness "app" --with-spec       # Enable spec task checklists
 /rn-harness --resume                # Resume paused pipeline
 /rn-harness --status                # Check status
 /rn-harness --status --verbose      # Detailed status
-/rn-harness --rounds 5              # Max 5 QA rounds
+/rn-harness --rounds 5              # Max QA rounds (default: 3)
 /rn-harness --ref https://...       # Reference site
 /rn-harness --ref ./mockup.png      # Reference image
 /rn-harness --skip-research         # Skip market research
