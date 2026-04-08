@@ -86,7 +86,7 @@ cp $CLAUDE_PLUGIN_ROOT/templates/.gitignore.template .gitignore
 
 **IMPORTANT**: `.env` and `credentials/` are in `.gitignore` — never committed to git.
 
-필수 의존성 설치:
+Dependencies install:
 ```bash
 # Core
 npx expo install expo-router react-native-safe-area-context react-native-screens expo-linking expo-constants expo-status-bar
@@ -104,13 +104,28 @@ npm install react-hook-form zod @hookform/resolvers
 # UI
 npm install @shopify/flash-list react-native-reanimated @gorhom/bottom-sheet
 
-# AdMob + ATT (광고 추적 권한)
+# AdMob + ATT
 npm install react-native-google-mobile-ads
 npx expo install expo-tracking-transparency
+
+# OTA Updates
+npx expo install expo-updates
 
 # Test
 npm install -D vitest @testing-library/react-native
 ```
+
+#### Step 1.3: EAS Init + Update Setup
+
+```bash
+# Initialize EAS
+eas init
+
+# Configure EAS Update (OTA)
+eas update:configure
+```
+
+This auto-adds `updates.url` and `runtimeVersion` to app.config.ts.
 
 #### Step 1.5: 플랫폼 공통 설정 (CRITICAL)
 
@@ -121,11 +136,18 @@ export default {
   name: "$APP_NAME",
   slug: "$APP_SLUG",
   version: "1.0.0",
-  // 기본 언어: 한국어
+  // Default language: Korean
   primaryLanguage: "ko",
-  // 방향: Portrait 고정
+  // Orientation: Portrait only
   orientation: "portrait",
-  // Bundle ID — iOS/Android 동일
+  // EAS Update (OTA) — auto-configured by eas update:configure
+  updates: {
+    url: "https://u.expo.dev/[PROJECT_ID]",
+  },
+  runtimeVersion: {
+    policy: "appVersion",
+  },
+  // Bundle ID — same for iOS/Android
   ios: {
     bundleIdentifier: "com.{company}.{appname}",
     buildNumber: "1",
@@ -156,6 +178,7 @@ export default {
   },
   plugins: [
     "expo-router",
+    "expo-updates",
     "expo-tracking-transparency",
     [
       "react-native-google-mobile-ads",

@@ -234,6 +234,48 @@ docs/harness/
 └── pipeline-log.md  # Event log
 ```
 
+## EAS Build Notes
+
+### Android GRADLE_OPTS (Required)
+
+Android local builds frequently fail with `OutOfMemoryError`. The harness automatically sets this in `eas.json`:
+
+```json
+{
+  "build": {
+    "production": {
+      "env": {
+        "GRADLE_OPTS": "-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g"
+      }
+    }
+  }
+}
+```
+
+Adjust `-Xmx4g` down to `-Xmx2g` if your machine has less than 8GB RAM.
+
+### EAS Update (OTA)
+
+The harness configures [EAS Update](https://docs.expo.dev/eas-update/introduction/) automatically. After store release, you can push JS-only fixes without store re-submission:
+
+```bash
+eas update --branch production --message "Fix: button color"
+```
+
+- No store review needed for JS/asset changes
+- Native code changes still require a new build + store submission
+- Configured with `runtimeVersion.policy: "appVersion"` for safety
+
+### Common Build Failures
+
+| Error | Platform | Fix |
+|-------|----------|-----|
+| `OutOfMemoryError` | Android | Increase `GRADLE_OPTS` `-Xmx` value |
+| `Metaspace` | Android | Increase `-XX:MaxMetaspaceSize` |
+| `SDK location not found` | Android | Set `ANDROID_HOME` env var |
+| `No signing certificate` | iOS | Use cloud build (EAS manages provisioning) |
+| `Pod install failed` | iOS | `cd ios && pod install --repo-update` |
+
 ## Store Submission Details
 
 ### iOS (Fully Automated)
