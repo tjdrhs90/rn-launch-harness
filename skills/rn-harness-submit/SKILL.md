@@ -1,240 +1,343 @@
-# rn-harness-submit — Phase 9: 스토어 제출
+# rn-harness-submit — Phase 10: Store Submission
 
-App Store Connect API와 Google Play Developer API를 사용하여 앱을 스토어에 제출한다.
+Submit the app to App Store and Google Play. Uses App Store Connect API (iOS) and Google Play Developer API v3 (Android).
 
 ## Trigger
 
-오케스트레이터에서 Phase 9로 호출됨.
+Called by the orchestrator as Phase 10.
 
 ## Input
 
-- `docs/harness/config.md` (API 키 설정)
-- `docs/harness/handoff/build-result.md` (빌드 결과)
-- `docs/harness/store-assets/` (스크린샷 + 메타데이터)
+- `docs/harness/config.md` (API keys, developer info)
+- `docs/harness/handoff/build-result.md` (build URLs)
+- `docs/harness/store-assets/` (screenshots + metadata)
+- `.env` (credentials)
 
-## Process
+---
 
-### Part A: iOS — App Store 제출 (완전 자동)
+## Part A: iOS — App Store Submission (Fully Automated)
 
-#### A-1: API 키 확인
+### A-1: Credential Check
 
-**우선 `.env` 파일에서 읽기:**
-```bash
-source .env  # 또는 직접 파싱
-```
-
-확인할 값:
-- `ASC_KEY_ID` — API Key ID (10자리)
+Read from `.env`:
+- `ASC_KEY_ID` — API Key ID (10 chars)
 - `ASC_ISSUER_ID` — Issuer ID (UUID)
-- `ASC_PRIVATE_KEY_PATH` — .p8 파일 경로 (기본: `./credentials/asc-api-key.p8`)
+- `ASC_PRIVATE_KEY_PATH` — .p8 file path (default: `./credentials/asc-api-key.p8`)
 
-**값이 비어있거나 .p8 파일이 없으면** AskUserQuestion:
+If missing or .p8 file not found → AskUserQuestion:
 ```
-App Store Connect API Key가 필요합니다.
-.env 파일에 값이 설정되지 않았습니다.
+App Store Connect API Key is required.
 
 1. App Store Connect → Users and Access → Integrations → API Keys
-2. 새 키 생성 (Admin 권한)
-3. .p8 파일을 credentials/asc-api-key.p8 에 저장
-4. .env 파일에 다음을 입력:
+2. Generate new key (Admin role)
+3. Save .p8 file to credentials/asc-api-key.p8
+4. Add to .env:
 
    ASC_KEY_ID=XXXXXXXXXX
    ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
    ASC_PRIVATE_KEY_PATH=./credentials/asc-api-key.p8
 
-완료 후 Enter. (이미 EAS에 설정되어 있다면 "eas" 입력)
+Press Enter when done. (Type "eas" if already configured in EAS)
 ```
 
-#### A-2: EAS Submit (빌드 업로드)
+### A-2: EAS Submit (Build Upload)
 
 ```bash
 eas submit --platform ios --profile production --non-interactive
 ```
 
-또는 빌드 URL 직접 지정:
+Or with specific build URL:
 ```bash
-eas submit --platform ios --url [빌드URL] --non-interactive
+eas submit --platform ios --url [BUILD_URL] --non-interactive
 ```
 
-#### A-3: App Store Connect API로 메타데이터 설정
+### A-3: App Store Connect API — Metadata
 
-EAS Submit이 빌드 업로드를 처리하므로, 추가 메타데이터는 ASC API로:
+EAS Submit handles the binary upload. Additional metadata via ASC API:
 
-1. **앱 정보 확인/생성**
-   - Bundle ID가 이미 등록되어 있는지 확인
-   - 없으면 API로 Bundle ID 등록 + 앱 레코드 생성
+1. **Check/Create App Record**
+   - Check if Bundle ID exists → if not, register via `POST /v1/bundleIds`
+   - Create app record via `POST /v1/apps`
 
-2. **버전 생성**
-   - 새 앱 스토어 버전 생성 (1.0.0)
+2. **Create App Store Version**
+   - `POST /v1/appStoreVersions` (version: "1.0.0", platform: IOS)
 
-3. **앱 정보 설정**
-   - 기본 로케일: `ko` (한국어)
-   - primaryCategory 설정
-   - 개인정보처리방침 URL (config.md의 developer.privacy_url)
+3. **App Info**
+   - Primary locale: `ko` (Korean)
+   - Primary category from PRD
+   - Privacy policy URL: `config.md → developer.privacy_url`
 
-4. **로컬라이제이션 설정**
-   - 앱 이름, 설명, 키워드, 부제
-   - What's New (신규 출시는 생략 가능)
-   - 마케팅 URL (config.md의 developer.homepage_url)
-   - 지원 URL (config.md의 developer.privacy_url)
+4. **Localization** (ko locale)
+   - App name, description, keywords, subtitle
+   - Marketing URL: `config.md → developer.homepage_url`
+   - Support URL: `config.md → developer.email` (or privacy URL)
 
-5. **저작권 설정**
-   - config.md의 developer.copyright 사용
+5. **Copyright**
+   - `config.md → developer.copyright`
 
-6. **스크린샷 업로드**
-   - 디바이스별 스크린샷 세트 생성
-   - 이미지 바이너리 업로드
-   - 업로드 커밋
-   - **iPad 스크린샷 불필요** (supportsTablet: false)
+6. **Screenshot Upload**
+   - iPhone 6.7" screenshots only (supportsTablet: false → no iPad)
+   - Create screenshot set → upload binary → commit
 
-7. **빌드 연결**
-   - 처리 완료된 빌드를 버전에 연결
+7. **Build Assignment**
+   - Wait for build processing (`processingState: VALID`)
+   - Link build to version
 
-8. **심사 정보**
-   - 연락처: config.md의 ios_review (first_name, last_name, phone)
-   - 데모 계정 (필요시)
-   - 심사 노트
-   - 암호화: No (ITSAppUsesNonExemptEncryption: false)
+8. **Review Information**
+   - Contact: `config.md → ios_review` (first_name, last_name, phone)
+   - Demo account (if needed — AskUserQuestion)
+   - Encryption: No (ITSAppUsesNonExemptEncryption: false)
 
-9. **심사 제출**
-   - reviewSubmissions API로 제출
+9. **Submit for Review**
+   - `POST /v1/reviewSubmissions`
 
-#### A-4: iOS 제출 확인
+### A-4: iOS Result
 
-AskUserQuestion:
 ```
-iOS 앱 심사 제출 완료!
-- 앱: [앱이름]
-- 버전: 1.0.0
-- 상태: Waiting for Review
-
-App Store Connect에서 확인: https://appstoreconnect.apple.com
+iOS submission complete!
+- App: [name]
+- Version: 1.0.0
+- Status: Waiting for Review
+- App Store Connect: https://appstoreconnect.apple.com
 ```
 
 ---
 
-### Part B: Android — Google Play 제출 (일부 수동)
+## Part B: Android — Google Play Submission
 
-#### B-1: Play Console 수동 작업 안내
+### B-1: Manual Steps (API Limitations)
 
-AskUserQuestion:
+AskUserQuestion — PAUSE and guide user through mandatory manual steps:
+
 ```
-Google Play는 앱 생성과 일부 설정을 API로 할 수 없어서 
-Play Console에서 직접 해야 합니다.
+Google Play requires some manual setup that the API cannot do.
 
-다음 작업을 완료해주세요:
+Please complete these in Play Console (https://play.google.com/console):
 
-1. https://play.google.com/console 접속
+1. CREATE APP:
+   - App name: [name from PRD]
+   - Default language: Korean
+   - App (not game) / Free
+   - Accept declarations
 
-2. 앱 만들기:
-   - 앱 이름: [PRD에서 가져온 이름]
-   - 기본 언어: 한국어
-   - 앱/게임: 앱
-   - 무료/유료: 무료
-   - 선언 동의
+2. AAB UPLOAD (first time only):
+   - Production → Create new release
+   - Upload the .aab file from EAS Build
+   - (Download link: [build URL from build-result.md])
 
-3. 콘텐츠 등급 (IARC):
-   - 대시보드 → 앱 콘텐츠 → 콘텐츠 등급
-   - 설문 완료
+3. CONTENT RATING (IARC):
+   - App content → Content rating → Start questionnaire
+   - Complete the survey
 
-4. 데이터 안전:
-   - 대시보드 → 앱 콘텐츠 → 데이터 안전
-   - 개인정보 처리 양식 작성
+4. DATA SAFETY:
+   - App content → Data safety
+   - Fill out the privacy form
+   - Note: If using AdMob, declare "Advertising" data collection
 
-5. 대상 연령 및 광고:
-   - 타겟 잠재고객 설정
-   - 광고 포함 여부 "예" 선택 (AdMob 사용)
+5. TARGET AUDIENCE & ADS:
+   - Set target age group
+   - Select "Yes, contains ads" (if AdMob enabled)
 
-6. 스토어 등록정보:
-   - (API로 자동 설정할 예정이므로 기본만 입력해도 됨)
+6. APP CATEGORY:
+   - Store settings → App category
+   - Select appropriate category
 
-7. Service Account 설정 (처음인 경우):
-   - 설정 → API 액세스 → 서비스 계정 만들기
-   - JSON 키 파일 다운로드
-   - 경로를 입력해주세요
+7. COUNTRIES/REGIONS:
+   - Production → Countries/regions
+   - Select distribution countries
 
-모두 완료되면 Enter, Service Account JSON 경로를 입력해주세요.
-(예: /path/to/service-account.json)
+Press Enter when all steps are complete.
 ```
 
-#### B-2: API 설정
+### B-2: Service Account Check
 
-사용자가 입력한 Service Account JSON 경로를 `config.md`에 저장.
+Read from `.env`:
+- `GOOGLE_PLAY_SA_JSON` — path to service account JSON
 
-#### B-3: EAS Submit (AAB 업로드)
+If missing → AskUserQuestion:
+```
+Google Play Service Account JSON is required.
+
+1. Play Console → Settings → API access
+2. Create or link a service account
+3. Grant "Release Manager" role
+4. Download JSON key
+5. Save to credentials/google-play-sa.json
+6. Add to .env:
+
+   GOOGLE_PLAY_SA_JSON=./credentials/google-play-sa.json
+
+Enter the path, or press Enter if already set.
+```
+
+### B-3: Generate publish.js Script
+
+Create `scripts/publish.js` in the project based on the proven pattern:
+
+```javascript
+#!/usr/bin/env node
+
+const { google } = require('googleapis');
+const fs = require('fs');
+const path = require('path');
+
+const PACKAGE_NAME = '[from config.md bundle_id]';
+const KEY_FILE = path.resolve(__dirname, '..', process.env.GOOGLE_PLAY_SA_JSON || './credentials/google-play-sa.json');
+const METADATA_DIR = path.resolve(__dirname, '..', 'docs/harness/store-assets/metadata');
+const SCREENSHOTS_DIR = path.resolve(__dirname, '..', 'docs/harness/store-assets');
+
+const APP_CONFIG = {
+  contactEmail: '[from config.md developer.email]',
+  contactWebsite: '[from config.md developer.homepage_url]',
+  contactPhone: '',
+  defaultLanguage: 'ko-KR',
+};
+
+// ... (full publish.js implementation)
+```
+
+Install dependency:
+```bash
+npm install googleapis
+```
+
+### B-4: Prepare Metadata Files
+
+Create metadata directory structure from store-assets:
+```
+docs/harness/store-assets/
+├── metadata/
+│   └── ko-KR/
+│       ├── title.txt              # App name (from PRD)
+│       ├── short_description.txt  # 80 chars max
+│       ├── full_description.txt   # 4000 chars max
+│       └── release_notes.txt      # What's new
+├── icon.png                       # 512x512
+├── feature_graphic.png            # 1024x500
+└── android/
+    └── phone/
+        ├── phone_01.png
+        ├── phone_02.png
+        └── phone_03.png
+```
+
+### B-5: Run Publish Script
+
+Execute in stages:
 
 ```bash
-eas submit --platform android --profile production --non-interactive
+# Step 1: Metadata + images only (no submission)
+node scripts/publish.js --images
+
+# Step 2: Verify in Play Console that everything looks correct
 ```
-
-#### B-4: Google Play API로 스토어 등록정보 설정
-
-1. **스토어 리스팅 업데이트**
-   - 제목, 짧은 설명, 전체 설명
-   - 로케일별 설정
-
-2. **이미지 업로드**
-   - phoneScreenshots: 스크린샷
-   - featureGraphic: 대표 이미지 (1024x500)
-   - icon: 앱 아이콘 (512x512)
-
-3. **트랙 릴리즈**
-   - internal 트랙에 먼저 릴리즈 (테스트)
-   - 또는 production 트랙으로 직접 릴리즈
-
-4. **릴리즈 노트**
-   - 버전별 변경사항
-
-#### B-5: Android 제출 확인
 
 AskUserQuestion:
 ```
-Android 앱 제출 완료!
-- 앱: [앱이름]
-- 트랙: [internal/production]
-- 상태: [상태]
+Metadata and images have been uploaded to Play Console.
+Please verify in the Play Console that everything looks correct.
 
-Play Console에서 확인: https://play.google.com/console
+Press Enter to proceed with review submission, or type "skip" to submit manually.
+```
+
+```bash
+# Step 3: Submit for review
+node scripts/publish.js --submit-only --track production
+```
+
+### B-6: Handle Draft Status
+
+If the app is still in draft (first submission, manual steps incomplete):
+- Script detects draft status automatically
+- Updates release notes only (cannot submit draft via API)
+- Prints warning with remaining manual steps:
+
+```
+⚠ App is still in draft status.
+Complete these in Play Console before review submission:
+  □ Content rating (IARC questionnaire)
+  □ App category
+  □ Countries/regions
+  □ Data safety section
+```
+
+AskUserQuestion:
+```
+The app is in draft status — some Play Console steps are still incomplete.
+Complete the items listed above, then press Enter to retry submission.
+(Or type "done" to finish — you can submit manually from Play Console.)
+```
+
+### B-7: Android Result
+
+```
+Android submission complete!
+- App: [name]
+- Track: production
+- Version: [versionCode]
+- Status: [completed/draft]
+- Play Console: https://play.google.com/console
 ```
 
 ---
 
-### Part C: 최종 정리
+## Part C: Final Wrap-up
 
-#### C-1: 제출 리포트 작성
+### C-1: Submission Report
 
 `docs/harness/handoff/submit-result.md`:
+
 ```markdown
 # Store Submission Report
 
 ## iOS — App Store
-- Status: [Submitted/Failed]
+- Status: [Submitted/Skipped/Failed]
 - Version: 1.0.0
-- Build: [빌드번호]
-- Submitted: [날짜]
-- Notes: [특이사항]
+- Build: [buildNumber]
+- Submitted: [date]
 
 ## Android — Google Play
-- Status: [Submitted/Failed]
-- Track: [internal/production]
-- Version: 1.0.0
-- Submitted: [날짜]
-- Notes: [특이사항]
+- Status: [Submitted/Draft/Skipped/Failed]
+- Track: [production/internal]
+- Version Code: [versionCode]
+- Submitted: [date]
+- Script: scripts/publish.js
 
 ## AdMob
-- iOS Ad Units: [실제/테스트]
-- Android Ad Units: [실제/테스트]
-- Note: [테스트 ID인 경우 교체 필요 안내]
+- iOS Ad Units: [real/test]
+- Android Ad Units: [real/test]
+- Note: [Replace test IDs before release if using test IDs]
+
+## EAS Update
+- Channel: production
+- OTA ready: [yes/no]
 
 ## Pending Manual Actions
-- [ ] [남은 수동 작업 목록]
+- [ ] [remaining items]
+
+## Re-submission Commands
+# Update metadata + images
+node scripts/publish.js --images
+
+# Submit for review
+node scripts/publish.js --submit-only
+
+# Full automation
+node scripts/publish.js --images --submit
+
+# Internal test track
+node scripts/publish.js --images --submit --track internal
 ```
 
-#### C-2: Git 태그
+### C-2: Git Tag
 
 ```bash
 git tag -a v1.0.0 -m "Release 1.0.0 — Store submission"
-git push --tags
+```
+
+AskUserQuestion before pushing tag:
+```
+Ready to create git tag v1.0.0. Push to remote? (yes/no)
 ```
 
 ## State Update
@@ -246,8 +349,11 @@ current_phase: done
 
 ## HARD GATES
 
-- iOS: EAS 빌드 성공 없이 제출 시도 금지
-- Android: Play Console 수동 작업 확인 없이 API 호출 금지
-- 스크린샷/메타데이터 없이 제출 금지
-- 개인정보처리방침 URL 없이 제출 금지
-- 제출 실패 시 에러 분석 후 사용자에게 안내
+- iOS: EAS build must succeed before submission
+- Android: Manual Play Console steps must be confirmed before API calls
+- Screenshots and metadata must exist before submission
+- Privacy policy URL required for both stores
+- Service Account JSON must exist and be valid for Android API calls
+- Draft app detection: gracefully degrade to release notes update only
+- Submission failure: analyze error, report to user, do NOT retry blindly
+- publish.js must be generated with correct package name and config values
