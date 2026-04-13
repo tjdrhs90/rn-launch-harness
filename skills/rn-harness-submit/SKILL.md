@@ -1,3 +1,9 @@
+---
+name: rn-harness-submit
+description: Phase 10 — Submit to App Store Connect (iOS) and Google Play (Android). iOS fully automated, Android pauses for manual steps.
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion]
+---
+
 # rn-harness-submit — Phase 10: Store Submission
 
 Submit the app to App Store and Google Play. Uses App Store Connect API (iOS) and Google Play Developer API v3 (Android).

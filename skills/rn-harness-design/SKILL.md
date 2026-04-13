@@ -1,3 +1,9 @@
+---
+name: rn-harness-design
+description: Phase 3 — Design system with NativeWind theme, colors, typography, and component specs.
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion]
+---
+
 # rn-harness-design — Phase 3: 디자인 시스템
 
 PRD를 기반으로 NativeWind 디자인 시스템을 설계한다.

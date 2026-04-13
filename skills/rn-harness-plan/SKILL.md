@@ -1,3 +1,9 @@
+---
+name: rn-harness-plan
+description: Phase 2 — PRD generation with user stories, Expo Router structure, FSD module map, and API design.
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion]
+---
+
 # rn-harness-plan — Phase 2: 기획 (PRD)
 
 시장 조사 결과를 기반으로 상세 기획서(PRD)를 작성한다.

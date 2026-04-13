@@ -1,3 +1,9 @@
+---
+name: rn-harness-contract
+description: Phase 4 — Generator and Evaluator negotiate completion criteria before any code is written.
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+---
+
 # rn-harness-contract — Phase 4: 계약 협상
 
 Generator와 Evaluator가 빌드 전 완료 기준에 합의한다.

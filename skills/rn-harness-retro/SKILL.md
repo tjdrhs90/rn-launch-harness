@@ -1,3 +1,10 @@
+---
+name: rn-harness-retro
+description: Pipeline retrospective — evaluate the completed pipeline against Anthropic's 9 harness principles.
+argument-hint: [project-dir] [--run-app] [--deep]
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+---
+
 # rn-harness-retro — Harness Retrospective
 
 Retrospective analysis of a project built with the RN Launch Harness pipeline. Evaluates the app against Anthropic's harness design principles and optionally verifies the app runs correctly.

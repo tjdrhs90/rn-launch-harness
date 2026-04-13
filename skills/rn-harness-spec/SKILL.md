@@ -1,3 +1,9 @@
+---
+name: rn-harness-spec
+description: Phase 2.5 — Break PRD into file-level task checklists under docs/specs/ for progress tracking.
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+---
+
 # rn-harness-spec — Phase 2.5: Spec Planning
 
 Breaks down the PRD into file-level task checklists under `docs/specs/`, organized by feature and implementation phase. Sits between Plan (Phase 2) and Design (Phase 3).

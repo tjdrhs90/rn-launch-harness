@@ -1,3 +1,10 @@
+---
+name: rn-harness-status
+description: Display current pipeline progress, build rounds, scores, and state.
+argument-hint: [--verbose] [--log]
+allowed-tools: [Read, Bash, Glob, Grep]
+---
+
 # rn-harness-status — 파이프라인 상태 조회
 
 현재 파이프라인 진행 상황을 표시한다.

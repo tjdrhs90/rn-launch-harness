@@ -1,3 +1,9 @@
+---
+name: rn-harness-evaluator
+description: Phase 6 — QA verification. Default mode runs functional check only; --strict runs 3-phase progressive QA with Agent Team.
+allowed-tools: [Agent, Read, Write, Edit, Bash, Glob, Grep]
+---
+
 # rn-harness-evaluator — Phase 5: 3-Phase Progressive QA
 
 Verifies the Generator's build against contract criteria through a progressive 3-phase evaluation pipeline.

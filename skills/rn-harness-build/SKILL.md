@@ -1,3 +1,9 @@
+---
+name: rn-harness-build
+description: Phase 8 — EAS Build for iOS and Android, plus EAS Update (OTA) configuration.
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion]
+---
+
 # rn-harness-build — Phase 8: EAS Build
 
 Build iOS/Android binaries via EAS Build and configure EAS Update for OTA.

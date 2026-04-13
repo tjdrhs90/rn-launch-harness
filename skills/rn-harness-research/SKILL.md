@@ -1,3 +1,9 @@
+---
+name: rn-harness-research
+description: Phase 1 — Market research and idea discovery via store top charts and competitor analysis.
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch, AskUserQuestion]
+---
+
 # rn-harness-research — Phase 1: 시장 조사 & 아이디어 발굴
 
 아이디어가 있으면 시장을 조사하고, 없으면 직접 찾아서 제안한다.

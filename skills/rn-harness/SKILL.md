@@ -1,3 +1,10 @@
+---
+name: rn-harness
+description: React Native app launch harness — from market research to App Store & Google Play submission. One command takes you from idea to store review.
+argument-hint: <app description> [--resume] [--status] [--rounds <N>] [--ref <url-or-image>] [--strict] [--with-spec] [--skip-research] [--skip-admob]
+allowed-tools: [Agent, Read, Write, Edit, Bash, Glob, Grep, WebFetch, WebSearch, AskUserQuestion, TaskCreate, TaskUpdate]
+---
+
 # /rn-harness — RN Launch Harness
 
 React Native 모바일 앱을 아이디어부터 스토어 출시까지 자동화하는 메인 오케스트레이터.

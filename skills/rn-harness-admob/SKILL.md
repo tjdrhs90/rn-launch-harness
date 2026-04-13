@@ -1,3 +1,9 @@
+---
+name: rn-harness-admob
+description: Phase 7 — Smart AdMob ad placement analysis and integration. Guides user through manual ad unit creation.
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion]
+---
+
 # rn-harness-admob — Phase 6: AdMob Integration
 
 Integrate AdMob ads into the app. Analyze the app to determine the best ad strategy, then guide the user through manual ad unit creation and inject code automatically.

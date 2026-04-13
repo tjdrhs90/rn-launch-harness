@@ -1,3 +1,9 @@
+---
+name: rn-harness-resume
+description: Resume a paused pipeline from saved state (after rate limit or manual action).
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
+---
+
 # rn-harness-resume — 파이프라인 재개
 
 일시정지된 파이프라인을 재개한다. 레이트 리밋, 수동 작업 완료 후 사용.

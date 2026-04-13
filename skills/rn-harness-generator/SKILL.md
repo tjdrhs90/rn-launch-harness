@@ -1,3 +1,9 @@
+---
+name: rn-harness-generator
+description: Phase 5 — Build the React Native + Expo app in 3 sub-phases (scaffold, API, UI). Self-evaluates before handoff.
+allowed-tools: [Agent, Read, Write, Edit, Bash, Glob, Grep]
+---
+
 # rn-harness-generator — Phase 5: 앱 빌드
 
 계약 기준에 따라 React Native + Expo 앱을 빌드한다.

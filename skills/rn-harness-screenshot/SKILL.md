@@ -1,3 +1,9 @@
+---
+name: rn-harness-screenshot
+description: Phase 9 — Automated store screenshots via Maestro and store metadata generation.
+allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion]
+---
+
 # rn-harness-screenshot — Phase 8: 스토어 스크린샷
 
 Maestro를 사용하여 앱 스토어용 스크린샷을 자동 촬영한다.
