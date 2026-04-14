@@ -347,21 +347,103 @@ npm run typecheck && npm run lint
 > 기존 Step 5 (Feature/Entity 구현)와 Step 6 (화면 구현)은 위의 서브 페이즈 패턴으로 대체되었다.
 > 이 패턴은 react-native-fsd-agent-template에서 검증된 방식으로, 각 단계에서 타입 안전성을 확보한 후 다음 단계로 진행하여 에러 전파를 최소화한다.
 
-#### Step 7: 테스트 작성
+#### Step 7: Unit Tests
 
-- 테스트 러너 설정 (vitest)
-- 핵심 비즈니스 로직 유닛 테스트
-- 유틸리티 함수 테스트
+- Test runner setup (vitest)
+- Core business logic unit tests
+- Utility function tests
 
-#### Step 8: 자체 평가 (MANDATORY)
+#### Step 8: Environment Detection & Run Test (MANDATORY)
+
+Before self-evaluation, detect the user's environment and attempt to run the app.
+
+**Step 8a: Environment Detection**
 
 ```bash
-npm run typecheck  # 에러 0개
-npm run lint       # 에러 0개
-npm test           # 전체 pass
+# OS detection
+uname -s  # Darwin = macOS, Linux, MINGW/MSYS = Windows
+
+# Xcode check (iOS — macOS only)
+xcode-select -p 2>/dev/null && echo "XCODE=yes" || echo "XCODE=no"
+
+# Android SDK check
+[ -d "$ANDROID_HOME" ] || [ -d "$ANDROID_SDK_ROOT" ] && echo "ANDROID_SDK=yes" || echo "ANDROID_SDK=no"
+
+# Android emulator running?
+adb devices 2>/dev/null | grep -q "emulator\|device" && echo "ANDROID_EMU=yes" || echo "ANDROID_EMU=no"
+
+# iOS simulator running? (macOS only)
+xcrun simctl list devices 2>/dev/null | grep -q "Booted" && echo "IOS_SIM=yes" || echo "IOS_SIM=no"
+
+# Has native modules? (AdMob = yes → Expo Go won't work)
+grep -q "react-native-google-mobile-ads" package.json && echo "NATIVE_MODULES=yes" || echo "NATIVE_MODULES=no"
 ```
 
-계약 기준별 자체 검증 후 핸드오프 작성.
+Record results in handoff:
+```
+## Environment
+- OS: [macOS/Linux/Windows]
+- Xcode: [yes/no]
+- Android SDK: [yes/no]
+- Native modules: [yes/no]
+- Expo Go compatible: [yes/no]
+```
+
+**Step 8b: Choose Run Strategy**
+
+| Condition | Strategy |
+|-----------|----------|
+| No native modules (no AdMob) | `npx expo start` (Expo Go OK) |
+| Native modules + macOS + Xcode | `npx expo run:ios` |
+| Native modules + Android SDK | `npx expo run:android` |
+| Native modules + no local SDK | `eas build --profile development` (cloud) |
+| Windows | Android only (no iOS) |
+| Linux | Android only (no iOS) |
+
+**Step 8c: Run App**
+
+Based on detected environment:
+
+```bash
+# Option A: Expo Go (no native modules)
+npx expo start
+
+# Option B: Local native build (native modules present)
+# macOS + Xcode → iOS simulator
+npx expo run:ios
+
+# Android SDK available → Android emulator
+npx expo run:android
+
+# Option C: Cloud dev build (no local SDK)
+eas build --profile development --platform android
+# Then install .apk on emulator/device and:
+npx expo start --dev-client
+```
+
+**IMPORTANT: AdMob + Expo Go = CRASH.** If `react-native-google-mobile-ads` is installed, Expo Go cannot be used. The app MUST be built as a development client or via `expo run:*`.
+
+**Step 8d: Verify App Runs**
+
+After starting:
+- Check terminal for crash/error output
+- If crash → read error, fix, retry
+- If runs → proceed to self-evaluation
+
+If NO local build environment is available at all:
+- Skip runtime test
+- Note in handoff: "Runtime test skipped — no local build environment"
+- Rely on typecheck + lint + unit tests as evidence
+
+#### Step 9: Self-Evaluation (MANDATORY)
+
+```bash
+npm run typecheck  # 0 errors
+npm run lint       # 0 errors
+npm test           # all pass
+```
+
+Contract criteria self-verification + handoff document.
 
 ### Round 2+: 피드백 기반 수정
 
