@@ -33,10 +33,13 @@ The Expo project is created as a **subdirectory** of the current working directo
 npx create-expo-app@latest $APP_SLUG
 cd $APP_SLUG
 mkdir -p credentials
+
+# Move harness artifacts into the project (from parent directory)
+mv ../docs ./ 2>/dev/null || true
 ```
 
 **NOTE**: Always use `npx create-expo-app@latest` to get the latest Expo SDK version.
-**NOTE**: Project is created as a subdirectory, NOT in the current directory. The parent directory holds `docs/harness/` pipeline artifacts and `.claude/` session history.
+**NOTE**: After project creation, `docs/harness/` is moved inside the project so all artifacts are in one git repo. The parent directory only retains `.claude/` session history.
 
 #### Step 1.1: Clean Up Default Template Files (MANDATORY)
 

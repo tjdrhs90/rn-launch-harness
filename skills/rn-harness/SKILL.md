@@ -35,31 +35,44 @@ Save app description as `$APP_IDEA`.
 
 ### Step 1: Bootstrap
 
-**Project structure:** The harness creates `docs/harness/` in the current working directory for pipeline artifacts. The actual Expo project is created as a **subdirectory** during Phase 5 (Generator), named after the app (kebab-case).
+**Project structure:** During Phase 5, the Expo project is created as a **subdirectory** named after the app (kebab-case). All harness artifacts (`docs/harness/`) live **inside** the Expo project so everything stays in one git repo.
+
+Before Phase 5 (research/plan/design), `docs/harness/` is created in the current working directory temporarily. When the Expo project is created in Phase 5, the Generator **moves** `docs/harness/` into the project directory.
 
 ```
 current-directory/          ← claude session here (history preserved)
-├── docs/harness/           ← pipeline artifacts
-│   ├── specs/
-│   ├── plans/
-│   ├── handoff/
-│   ├── feedback/
-│   ├── references/
-│   ├── screenshots/
-│   ├── store-assets/
-│   ├── config.md
-│   ├── state.md
-│   ├── build-log.md
-│   └── pipeline-log.md
+├── .claude/                ← session history (stays here)
 └── $APP_SLUG/              ← Expo project (created in Phase 5)
     ├── app/
     ├── src/
-    ├── .env
+    ├── docs/harness/       ← pipeline artifacts (inside project)
+    │   ├── specs/
+    │   ├── plans/
+    │   ├── handoff/
+    │   ├── feedback/
+    │   ├── references/
+    │   ├── screenshots/
+    │   ├── store-assets/
+    │   ├── config.md
+    │   ├── state.md
+    │   ├── build-log.md
+    │   └── pipeline-log.md
+    ├── scripts/
+    │   └── publish.js
     ├── credentials/
+    ├── .env
+    ├── .gitignore
     └── ...
 ```
 
 `$APP_SLUG` is derived from the app name in kebab-case (e.g., "가계부 앱" → `budget-book`, "커피 구독" → `coffee-tracker`). Determined during Phase 2 (Plan) and stored in `config.md` as `app_slug`.
+
+**Phase 1~4**: `docs/harness/` is in the current directory (temporary).
+**Phase 5 (Generator)**: After `create-expo-app`, move `docs/harness/` into the project:
+```bash
+mv docs/harness/ $APP_SLUG/docs/harness/
+```
+**Phase 6+**: All work happens inside `$APP_SLUG/`.
 
 ### Step 2: Reference Capture
 
