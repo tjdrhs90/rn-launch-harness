@@ -23,15 +23,20 @@ allowed-tools: [Agent, Read, Write, Edit, Bash, Glob, Grep]
 
 ### Round 1: 전체 빌드
 
-#### Step 1: 프로젝트 스캐폴딩
+#### Step 1: Project Scaffolding
+
+Read `app_slug` from `docs/harness/config.md` (set during Phase 2).
+The Expo project is created as a **subdirectory** of the current working directory, keeping the claude session history intact.
 
 ```bash
-npx create-expo-app@latest $APP_NAME
-cd $APP_NAME
+# $APP_SLUG = kebab-case app name from config.md (e.g., budget-book)
+npx create-expo-app@latest $APP_SLUG
+cd $APP_SLUG
 mkdir -p credentials
 ```
 
 **NOTE**: Always use `npx create-expo-app@latest` to get the latest Expo SDK version.
+**NOTE**: Project is created as a subdirectory, NOT in the current directory. The parent directory holds `docs/harness/` pipeline artifacts and `.claude/` session history.
 
 #### Step 1.1: Clean Up Default Template Files (MANDATORY)
 

@@ -31,6 +31,9 @@ research 산출물을 읽고:
 
 #### 2a. 제품 개요
 - 앱 이름 (가안)
+- **앱 슬러그 (`app_slug`)**: 앱 이름을 kebab-case 영문으로 변환. Expo 프로젝트 폴더명 + Bundle ID에 사용.
+  - 예: "가계부 앱" → `budget-book`, "커피 구독" → `coffee-tracker`
+  - AskUserQuestion으로 사용자 확인/수정
 - 한 줄 소개
 - 핵심 가치 제안
 - 타겟 사용자 페르소나 (2~3개)
@@ -162,6 +165,15 @@ AskUserQuestion으로 PRD 요약 공유:
 - react-native-google-mobile-ads (AdMob)
 
 ## 9. MVP 범위 및 로드맵
+```
+
+## Config Update
+
+After PRD is finalized, update `docs/harness/config.md` with:
+```yaml
+app_name: "[앱 이름]"
+app_slug: "[kebab-case slug]"     # e.g., budget-book
+bundle_id: "com.{company}.{slug}" # e.g., com.gonigon.budgetbook (no hyphens)
 ```
 
 ## State Update

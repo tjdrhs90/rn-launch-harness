@@ -31,25 +31,35 @@ if --status → Skill("rn-harness-status")
 if --resume → Skill("rn-harness-resume")
 ```
 
-앱 설명을 `$APP_IDEA`로 저장.
+Save app description as `$APP_IDEA`.
 
 ### Step 1: Bootstrap
 
-디렉토리 구조 생성:
+**Project structure:** The harness creates `docs/harness/` in the current working directory for pipeline artifacts. The actual Expo project is created as a **subdirectory** during Phase 5 (Generator), named after the app (kebab-case).
+
 ```
-docs/harness/
-├── specs/
-├── plans/
-├── handoff/
-├── feedback/
-├── references/
-├── screenshots/
-├── store-assets/
-├── config.md
-├── state.md
-├── build-log.md
-└── pipeline-log.md
+current-directory/          ← claude session here (history preserved)
+├── docs/harness/           ← pipeline artifacts
+│   ├── specs/
+│   ├── plans/
+│   ├── handoff/
+│   ├── feedback/
+│   ├── references/
+│   ├── screenshots/
+│   ├── store-assets/
+│   ├── config.md
+│   ├── state.md
+│   ├── build-log.md
+│   └── pipeline-log.md
+└── $APP_SLUG/              ← Expo project (created in Phase 5)
+    ├── app/
+    ├── src/
+    ├── .env
+    ├── credentials/
+    └── ...
 ```
+
+`$APP_SLUG` is derived from the app name in kebab-case (e.g., "가계부 앱" → `budget-book`, "커피 구독" → `coffee-tracker`). Determined during Phase 2 (Plan) and stored in `config.md` as `app_slug`.
 
 ### Step 2: Reference Capture
 
