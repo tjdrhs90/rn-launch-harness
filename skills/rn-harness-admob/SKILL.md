@@ -239,6 +239,11 @@ export const getAdUnitId = (key: TAdUnitKey): string => {
   return __DEV__ ? TEST_IDS[key] : PRODUCTION_IDS[key];
 };
 
+// Hide all ads (for store screenshots)
+export const isAdsHidden = (): boolean => {
+  return process.env.EXPO_PUBLIC_HIDE_ADS === 'true';
+};
+
 // Interstitial frequency cap (ms)
 export const INTERSTITIAL_MIN_INTERVAL = 3 * 60 * 1000; // 3 minutes
 ```
@@ -265,13 +270,16 @@ src/features/ads/
 ```typescript
 // src/features/ads/ui/AdBanner.tsx
 import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
-import { getAdUnitId } from '@shared/config/ads';
+import { getAdUnitId, isAdsHidden } from '@shared/config/ads';
 
 interface IAdBannerProps {
   size?: BannerAdSize;
 }
 
 export function AdBanner({ size = BannerAdSize.ANCHORED_ADAPTIVE_BANNER }: IAdBannerProps) {
+  // Hidden during store screenshot capture (EXPO_PUBLIC_HIDE_ADS=true)
+  if (isAdsHidden()) return null;
+
   return (
     <BannerAd
       unitId={getAdUnitId('BANNER')}
