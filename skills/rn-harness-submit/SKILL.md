@@ -74,7 +74,11 @@ EAS Submit handles the binary upload. Additional metadata via ASC API:
    - Privacy policy URL: `config.md → developer.privacy_url`
 
 4. **Localization** (ko locale)
-   - App name, description, keywords, subtitle
+   - App name (from title.txt), description (from full_description.txt), subtitle (from subtitle.txt)
+   - **Keywords** (from keywords.txt) — MUST be 95-100 chars including commas.
+     - Verify `keywords.txt` length before upload
+     - If < 95 chars: return to screenshot phase to regenerate (don't waste ASO budget)
+     - If > 100 chars: reject (API will fail)
    - Marketing URL: `config.md → developer.homepage_url`
    - Support URL: `config.md → developer.email` (or privacy URL)
 

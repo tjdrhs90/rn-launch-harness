@@ -216,7 +216,12 @@ Create metadata files from PRD:
 [앱 이름] (30 chars max)
 ```
 
-`docs/harness/store-assets/metadata/ko-KR/short_description.txt`:
+`docs/harness/store-assets/metadata/ko-KR/subtitle.txt` (iOS only):
+```
+[부제] (30 chars max)
+```
+
+`docs/harness/store-assets/metadata/ko-KR/short_description.txt` (Android):
 ```
 [짧은 설명] (80 chars max)
 ```
@@ -225,6 +230,39 @@ Create metadata files from PRD:
 ```
 [전체 설명] (4000 chars max, includes key features, value proposition)
 ```
+
+`docs/harness/store-assets/metadata/ko-KR/keywords.txt` (iOS only):
+
+**CRITICAL**: iOS App Store keywords field has a **100-character limit INCLUDING commas**. This field is one of the most important ASO (App Store Optimization) factors. **Fill it to the MAXIMUM — generate keywords until the total exceeds 100 characters, then trim down.**
+
+Rules:
+- Comma-separated, NO spaces after commas (to save characters)
+- Do NOT include the app name (already indexed)
+- Do NOT include the app category name (already indexed)
+- Do NOT duplicate words from the title/subtitle
+- Each word counts individually — "커피,구독,가계부" searches for each separately
+- Mix Korean + English keywords for broader reach
+- Prefer single words over phrases (unless phrase is a common search term)
+
+Process:
+1. Generate 20-30 candidate keywords from app features/target users/synonyms
+2. Join with commas (no spaces): `k1,k2,k3,...`
+3. Count total characters
+4. If < 100: add MORE keywords (synonyms, English variants, related concepts)
+5. If > 100: trim least relevant keywords
+6. **Target: 95-100 characters** (use the full budget, leave 0-5 char safety margin)
+
+Example (coffee subscription tracker app):
+```
+구독관리,커피,정기배송,지출관리,가계부,알림,통계,지출분석,예산,subscription,coffee,tracker,monthly,bill,reminder,budget,spending
+```
+Count: 97 characters ✓ (uses full budget)
+
+Bad example (too short):
+```
+커피,구독,관리
+```
+Count: 9 characters ✗ (wastes 91 characters of search opportunity)
 
 `docs/harness/store-assets/metadata/ko-KR/release_notes.txt`:
 ```
@@ -270,3 +308,4 @@ next_role: rn-harness-submit
 - **Ads MUST be hidden** during screenshot capture (EXPO_PUBLIC_HIDE_ADS=true)
 - If Maestro unavailable → manual fallback with clear instructions
 - Screenshots must be reviewed by user before proceeding to submission
+- **iOS keywords.txt MUST use 95-100 characters** (total length including commas). Under-utilizing this field hurts ASO. Generate extra keywords if short, trim if over 100.
