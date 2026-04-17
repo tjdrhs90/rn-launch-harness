@@ -1,0 +1,3 @@
+# Exclude template files from GitHub language statistics
+# These are templates copied into user projects, not plugin source code
+templates/** linguist-vendored
