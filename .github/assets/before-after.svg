@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="800" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="600" y="60" text-anchor="middle" fill="#f8fafc" font-size="32" font-weight="700">Shipping a React Native app</text>
+
+  <!-- Divider -->
+  <line x1="600" y1="100" x2="600" y2="780" stroke="#334155" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <!-- BEFORE (left) -->
+  <g transform="translate(60, 130)">
+    <rect width="500" height="30" rx="6" fill="#7f1d1d"/>
+    <text x="20" y="21" fill="#fff" font-size="15" font-weight="700">❌ BEFORE — manual (2-3 days)</text>
+
+    <g transform="translate(0, 50)" fill="#f87171" font-size="13">
+      <text y="0">⏱  Market research on top charts (2h)</text>
+      <text y="25">⏱  Write PRD, user stories (1h)</text>
+      <text y="50">⏱  Set up Expo project from scratch (30m)</text>
+      <text y="75">⏱  Clean default template files (20m)</text>
+      <text y="100">⏱  Configure NativeWind 6 files (30m)</text>
+      <text y="125">⏱  Set up FSD architecture manually</text>
+      <text y="150">⏱  Build features one by one</text>
+      <text y="175">⏱  Integrate AdMob + ATT + ad units</text>
+      <text y="200">⏱  Fight with GRADLE_OPTS OOM errors</text>
+      <text y="225">⏱  Configure eas.json profiles</text>
+      <text y="250">⏱  Set up EAS Update for OTA</text>
+      <text y="275">⏱  Take store screenshots manually (1h)</text>
+      <text y="300">⏱  Hide ads for screenshots (forgot!)</text>
+      <text y="325">⏱  Write ASO keywords (usually too few)</text>
+      <text y="350">⏱  Click through Play Console forms</text>
+      <text y="375">⏱  Upload to App Store Connect manually</text>
+      <text y="400">⏱  Debug iOS ATT permission bug (2h)</text>
+      <text y="425">⏱  Retry submission after rejection</text>
+    </g>
+
+    <rect y="530" width="500" height="60" rx="8" fill="#450a0a" stroke="#7f1d1d" stroke-width="1"/>
+    <text x="20" y="560" fill="#fca5a5" font-size="14" font-weight="600">Total time: 2-3 days per app</text>
+    <text x="20" y="580" fill="#fca5a5" font-size="12">Every new app: repeat all of it</text>
+  </g>
+
+  <!-- AFTER (right) -->
+  <g transform="translate(640, 130)">
+    <rect width="500" height="30" rx="6" fill="#065f46"/>
+    <text x="20" y="21" fill="#fff" font-size="15" font-weight="700">✓ AFTER — /rn-harness (1-2 hours)</text>
+
+    <g transform="translate(0, 50)">
+      <rect width="500" height="50" rx="6" fill="#1e293b" stroke="#475569"/>
+      <text x="20" y="20" fill="#10b981" font-family="monospace" font-size="14">$ /rn-harness "coffee tracker"</text>
+      <text x="20" y="40" fill="#94a3b8" font-family="monospace" font-size="11">→ answers 3 questions → walks away</text>
+
+      <g transform="translate(0, 70)" fill="#34d399" font-size="13">
+        <text y="0">✓  Market research automated (WebSearch)</text>
+        <text y="25">✓  PRD + FSD module map generated</text>
+        <text y="50">✓  Expo project scaffolded (latest SDK)</text>
+        <text y="75">✓  Default template cleaned up</text>
+        <text y="100">✓  NativeWind 6-check gate enforced</text>
+        <text y="125">✓  FSD architecture hard-gated</text>
+        <text y="150">✓  Code built by Generator agent</text>
+        <text y="175">✓  AdMob smart placement + ATT + delay</text>
+        <text y="200">✓  GRADLE_OPTS set automatically</text>
+        <text y="225">✓  eas.json with all profiles</text>
+        <text y="250">✓  EAS Update configured</text>
+        <text y="275">✓  Maestro captures screenshots</text>
+        <text y="300">✓  Ads hidden during capture</text>
+        <text y="325">✓  Keywords maxed to 95-100 chars</text>
+        <text y="350">✓  Google Play API uploads metadata</text>
+        <text y="375">✓  ASC API submits for review</text>
+        <text y="400">✓  QA gates reject broken code</text>
+        <text y="425">✓  Auto-resume on rate limit</text>
+      </g>
+    </g>
+
+    <rect y="580" width="500" height="60" rx="8" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
+    <text x="20" y="610" fill="#6ee7b7" font-size="14" font-weight="600">Total time: 1-2 hours (default mode)</text>
+    <text x="20" y="630" fill="#6ee7b7" font-size="12">~$30-60 on Claude Max · reusable for every app</text>
+  </g>
+
+  <!-- Footer -->
+  <text x="600" y="760" text-anchor="middle" fill="#475569" font-size="12">github.com/tjdrhs90/rn-launch-harness</text>
+</svg>
