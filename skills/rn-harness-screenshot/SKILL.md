@@ -269,6 +269,62 @@ Count: 9 characters ✗ (wastes 91 characters of search opportunity)
 [출시 노트]
 ```
 
+`docs/harness/store-assets/metadata/ko-KR/screenshot_captions.md`:
+
+**Screenshot caption copy** for store listings. These are the short marketing headlines overlaid on each screenshot. Written based on what each screenshot actually shows. 5-8 captions, matched 1:1 with the captured screenshot order.
+
+Rules:
+- **Headline**: 1 line, 15-25 characters (mobile-readable at small thumbnail size)
+- **Subheadline**: 1 line, 25-40 characters (supporting detail)
+- First caption = brand/value proposition (splash/logo context)
+- Middle captions = one feature per screenshot, benefit-focused not feature-focused
+- Last caption = aspirational / call to action
+- Korean uses shorter phrases (15-20 chars); English 20-30
+- Use emoji sparingly (0-1 per caption) for scannability
+- Match the screenshot order from Step 1
+
+Format template:
+
+```markdown
+# Screenshot Captions — [App Name]
+
+## 01 — First screen (splash / login / onboarding)
+**Headline:** 하루 한 번, 돈 관리
+**Subheadline:** 3초 가계부로 충분해요
+**Matches:** docs/harness/store-assets/ios/01-first.png
+
+## 02 — Home / main screen
+**Headline:** 이번 달 얼마 썼지?
+**Subheadline:** 카테고리별 지출 한눈에 보기
+**Matches:** docs/harness/store-assets/ios/02-home.png
+
+## 03 — Core feature (ex: quick entry)
+**Headline:** 손가락 한 번으로 기록
+**Subheadline:** 커피 한 잔, 택시비, 바로 입력
+**Matches:** docs/harness/store-assets/ios/03-feature.png
+
+## 04 — Secondary feature (ex: statistics)
+**Headline:** 내 소비 패턴이 보여요
+**Subheadline:** 주간·월간 리포트 자동 생성
+**Matches:** docs/harness/store-assets/ios/04-detail.png
+
+## 05 — Last screen (premium / settings / achievement)
+**Headline:** 목표 달성까지 D-23
+**Subheadline:** 매일 알림으로 잊지 않기
+**Matches:** docs/harness/store-assets/ios/05-profile.png
+```
+
+Process:
+1. Read PRD for feature priorities and value proposition
+2. For each screenshot captured (Step 1 list), write a caption
+3. Headline emphasizes **user benefit** (not feature name)
+   - Bad: "Charts screen" / "차트 화면"
+   - Good: "See where your money goes" / "내 소비 패턴이 보여요"
+4. Subheadline adds specific detail
+5. Save the file, then the user can use it with Figma/Canva/Sketch to overlay text on screenshots
+
+**Why this matters:** Screenshots on the store are viewed at thumbnail size. A user scrolling decides to install in 2-3 seconds based on these captions. A screenshot without a clear headline wastes that opportunity.
+
 ### Step 8: User Review
 
 AskUserQuestion:
@@ -283,6 +339,8 @@ Checklist:
 - [ ] App name correct
 - [ ] Description accurate
 - [ ] Privacy policy URL: [URL from config]
+- [ ] Screenshot captions match what's actually on screen (screenshot_captions.md)
+- [ ] iOS keywords.txt uses 95-100 chars
 
 Any changes needed? (Press Enter to proceed, or describe what to change)
 ```
@@ -309,3 +367,4 @@ next_role: rn-harness-submit
 - If Maestro unavailable → manual fallback with clear instructions
 - Screenshots must be reviewed by user before proceeding to submission
 - **iOS keywords.txt MUST use 95-100 characters** (total length including commas). Under-utilizing this field hurts ASO. Generate extra keywords if short, trim if over 100.
+- **screenshot_captions.md MUST include one caption per screenshot**, with headline + subheadline, matched to the actual on-screen content. Benefit-focused, not feature-focused.
