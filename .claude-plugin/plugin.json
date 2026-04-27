@@ -1,7 +1,7 @@
 {
   "name": "rn-launch-harness",
   "description": "React Native app development harness — from market research to store submission. Automates the entire mobile app lifecycle: ideation, planning, design, development, AdMob integration, EAS build, screenshots, and App Store / Google Play submission.",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "author": {
     "name": "ssg"
   },

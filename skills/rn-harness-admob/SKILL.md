@@ -201,6 +201,105 @@ Type "skip" to use Google test ad IDs for now (replace before release).
 
 ### Step 6: Implement Ad Code
 
+#### 6a-prereq. UMP (User Messaging Platform) — REQUIRED for EU/UK users
+
+Google requires consent collection (GDPR/ePrivacy) before showing personalized ads to users in the EU/UK/Switzerland. **Without UMP, your AdMob account can be flagged or revenue restricted.**
+
+`react-native-google-mobile-ads` includes UMP support via `AdsConsent`. Implementation:
+
+**Step 1**: Configure consent form in AdMob console (one-time, manual):
+- Go to https://apps.admob.com → Privacy & messaging → GDPR
+- Create a GDPR message
+- Select "User consent (paid + unpaid)" mode
+- Publish to all your apps
+
+**Step 2**: Implement consent flow on app start.
+
+`src/features/ads/lib/init-ads.ts`:
+```typescript
+import mobileAds, {
+  AdsConsent,
+  AdsConsentStatus,
+  AdsConsentDebugGeography,
+} from 'react-native-google-mobile-ads';
+
+export async function initializeAds(): Promise<void> {
+  // 1. Request UMP consent info update
+  const consentInfo = await AdsConsent.requestInfoUpdate({
+    // For testing in non-EU regions, simulate EU geography:
+    debugGeography: __DEV__
+      ? AdsConsentDebugGeography.EEA
+      : AdsConsentDebugGeography.DISABLED,
+    testDeviceIdentifiers: __DEV__ ? ['EMULATOR'] : [],
+  });
+
+  // 2. Show consent form if required
+  if (
+    consentInfo.isConsentFormAvailable &&
+    consentInfo.status === AdsConsentStatus.REQUIRED
+  ) {
+    await AdsConsent.showForm();
+  }
+
+  // 3. Check final consent status
+  const { canRequestAds } = await AdsConsent.getConsentInfo();
+
+  // 4. Initialize Mobile Ads SDK only after consent is resolved
+  if (canRequestAds) {
+    await mobileAds().initialize();
+  }
+}
+```
+
+**Step 3**: Call `initializeAds()` once at app startup, after the tracking permission delay (iOS):
+
+`app/_layout.tsx` (Root layout):
+```typescript
+import { useEffect } from 'react';
+import { Platform } from 'react-native';
+import { initializeAds } from '@features/ads';
+
+export default function RootLayout() {
+  useEffect(() => {
+    // iOS: wait for ATT prompt to settle before requesting consent
+    const delay = Platform.OS === 'ios' ? 2500 : 500;
+    const timer = setTimeout(() => {
+      initializeAds().catch(console.warn);
+    }, delay);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // ...
+}
+```
+
+**Step 4**: Allow users to revisit consent (Settings screen):
+```typescript
+// "Manage privacy preferences" button in settings
+import { AdsConsent } from 'react-native-google-mobile-ads';
+
+const handlePrivacyOptions = async () => {
+  await AdsConsent.showPrivacyOptionsForm();
+};
+```
+
+Required by Google: A user-accessible "manage privacy" option must exist in the app for users who already consented to be able to change their choice later.
+
+**Step 5**: Update ad request based on consent.
+
+When consent is denied for personalized ads, request non-personalized only:
+```typescript
+// In AdBanner.tsx, useInterstitial.ts, etc.
+const { canRequestAds, status } = await AdsConsent.getConsentInfo();
+const requestNonPersonalizedAdsOnly = status !== AdsConsentStatus.OBTAINED;
+
+<BannerAd
+  unitId={getAdUnitId('BANNER')}
+  size={size}
+  requestOptions={{ requestNonPersonalizedAdsOnly }}
+/>
+```
+
 #### 6a. Ad Config
 
 `src/shared/config/ads.ts`:
@@ -253,11 +352,13 @@ export const INTERSTITIAL_MIN_INTERVAL = 3 * 60 * 1000; // 3 minutes
 ```
 src/features/ads/
 ├── ui/
-│   └── AdBanner.tsx              # Reusable banner component
+│   └── AdBanner.tsx              # Reusable banner (handles bottom safe area internally)
 ├── hooks/
 │   ├── use-interstitial.ts       # Interstitial with frequency cap
 │   ├── use-rewarded.ts           # Rewarded with callback
 │   └── use-app-open-ad.ts        # App open ad (if applicable)
+├── lib/
+│   └── init-ads.ts               # UMP consent flow + mobileAds initialization
 ├── store/
 │   └── ads.store.ts              # Ad state (last shown time, rewards)
 ├── types/
@@ -265,10 +366,14 @@ src/features/ads/
 └── index.ts                      # barrel export
 ```
 
-#### 6c. AdBanner Component
+#### 6c. AdBanner Component (anchored to bottom edge — no gap)
+
+**Common bug**: wrapping the banner inside `<SafeAreaView>` adds a bottom safe-area inset between the banner and the screen edge, leaving a visible gap above the home indicator. The correct pattern is for the banner component itself to consume the bottom safe area, so the banner sits flush against the home indicator with no gap.
 
 ```typescript
 // src/features/ads/ui/AdBanner.tsx
+import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 import { getAdUnitId, isAdsHidden } from '@shared/config/ads';
 
@@ -280,15 +385,25 @@ export function AdBanner({ size = BannerAdSize.ANCHORED_ADAPTIVE_BANNER }: IAdBa
   // Hidden during store screenshot capture (EXPO_PUBLIC_HIDE_ADS=true)
   if (isAdsHidden()) return null;
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <BannerAd
-      unitId={getAdUnitId('BANNER')}
-      size={size}
-      requestOptions={{ requestNonPersonalizedAdsOnly: true }}
-    />
+    <View style={{ paddingBottom: insets.bottom, backgroundColor: '#000' }}>
+      <BannerAd
+        unitId={getAdUnitId('BANNER')}
+        size={size}
+        requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+      />
+    </View>
   );
 }
 ```
+
+Why this works:
+- The banner itself sits flush against the bottom (no visual gap)
+- The `paddingBottom: insets.bottom` puts a black strip BELOW the banner that fills the home indicator area
+- Banner content stays touchable; nothing overlaps the system UI
+- `backgroundColor: '#000'` blends with status/home indicator on dark theme; use `theme.background` for adaptive theming
 
 #### 6d. Interstitial Hook (with frequency cap)
 
@@ -325,16 +440,35 @@ export function useInterstitial() {
 #### 6e. Place Ads in Screens
 
 For **every screen with banner** (from Step 2):
+
+**CORRECT pattern** (no gap between banner and screen edge):
+```tsx
+<View className="flex-1 bg-background">
+  <SafeAreaView edges={['top', 'left', 'right']} className="flex-1">
+    <ScrollView className="flex-1">
+      {/* Screen content */}
+    </ScrollView>
+  </SafeAreaView>
+  {/* AdBanner handles its own bottom safe area internally */}
+  <AdBanner />
+</View>
+```
+
+**WRONG pattern** (causes the gap users complain about):
 ```tsx
 <SafeAreaView className="flex-1 bg-background">
-  {/* Screen content */}
   <ScrollView className="flex-1">
-    {/* ... */}
+    {/* content */}
   </ScrollView>
-  {/* Banner at bottom — above tab bar */}
-  <AdBanner />
+  <AdBanner />  {/* ← Banner is INSIDE SafeAreaView, gets pushed up by bottom inset */}
 </SafeAreaView>
 ```
+
+Key difference:
+- Use `<View>` as the outer container, not `<SafeAreaView>`
+- SafeAreaView wraps ONLY the content area with `edges={['top', 'left', 'right']}` (no bottom)
+- AdBanner sits at the very bottom; its internal `paddingBottom: insets.bottom` handles the home indicator
+- This makes the ad flush against the visible screen edge with no white gap
 
 For **interstitial triggers**:
 ```tsx
@@ -422,4 +556,10 @@ next_role: rn-harness-build
 - Interstitial frequency cap (min 3 minutes) MANDATORY
 - No ads on login/signup/onboarding screens
 - No ads on payment/checkout screens
-- AdBanner must be inside SafeAreaView (not overlapping system UI)
+- **AdBanner uses `useSafeAreaInsets` internally for bottom padding** (no gap between ad and screen edge)
+- **Outer container is `<View>` not `<SafeAreaView>`** when AdBanner is at the bottom
+- SafeAreaView wraps content with `edges={['top', 'left', 'right']}` only — bottom is handled by AdBanner
+- **UMP consent flow MANDATORY** (`AdsConsent.requestInfoUpdate` → `AdsConsent.showForm` → `mobileAds().initialize()`)
+- **AdMob console must have a published GDPR message** (manual one-time setup)
+- Privacy options entry point in app settings (`AdsConsent.showPrivacyOptionsForm`)
+- `mobileAds().initialize()` MUST NOT be called before `AdsConsent.requestInfoUpdate` resolves
