@@ -2,6 +2,10 @@
 
 A Claude Code plugin that automates the **entire React Native mobile app lifecycle** — from market research to App Store & Google Play submission.
 
+![RN Launch Harness demo](.github/assets/demo.gif)
+
+<sub>Illustrative run — the pipeline flow and hard gates. Not a live recording.</sub>
+
 ![RN Launch Harness Pipeline](.github/assets/pipeline.svg)
 
 One command takes you from idea to store review. Market research, planning, design system, development, AdMob integration, EAS build, store screenshots, and submission — all automated.
