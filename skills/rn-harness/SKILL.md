@@ -19,6 +19,7 @@ React Native 모바일 앱을 아이디어부터 스토어 출시까지 자동�
 - `--ref <url-or-image>` — Reference material (repeatable)
 - `--skip-research` — Skip market research
 - `--skip-admob` — Skip AdMob integration
+- `--skip-acceptance` — Skip the Phase 7.5 human acceptance gate (unattended/CI — logs a loud warning)
 - `--strict` — Enable full 3-phase QA + Agent Team (costs more tokens)
 - `--with-spec` — Enable Phase 2.5 spec planning with task checklists
 
@@ -119,6 +120,7 @@ strict_mode: false           # Default off (--strict enables 3-phase QA + Agent 
 with_spec: false             # Default off (--with-spec enables Phase 2.5)
 skip_research: false
 skip_admob: false
+skip_acceptance: false       # Phase 7.5 human approval gate before build (keep on — protects irreversible store steps)
 has_references: false
 default_language: ko
 
@@ -197,6 +199,7 @@ Pipeline phase order depends on mode:
     ↳ FAIL → Generator fix → re-evaluate (max 3 rounds)
     ↳ PASS → Next phase
  7. AdMob      → Skill("rn-harness-admob")        # Smart ad placement
+ 7.5 Accept   → Skill("rn-harness-acceptance")    # E2E smoke + human approval (PAUSE)
  8. Build      → EAS: Skill("rn-harness-build") / EAS-free: Skill("rn-harness-build-local")
  9. Screenshot → Skill("rn-harness-screenshot")   # Store screenshots
 10. Submit     → Skill("rn-harness-submit")       # App Store + Google Play
@@ -217,7 +220,8 @@ Pipeline phase order depends on mode:
     6.3 Edge Cases → Can it SURVIVE? (6 Agent Team + simulator)
     Each: FAIL → Generator fix → re-evaluate (max rounds per phase)
  7. AdMob      → Skill("rn-harness-admob")
- 8. Build      → Skill("rn-harness-build")
+ 7.5 Accept   → Skill("rn-harness-acceptance")    # E2E smoke + human approval (PAUSE)
+ 8. Build      → EAS: Skill("rn-harness-build") / EAS-free: Skill("rn-harness-build-local")
  9. Screenshot → Skill("rn-harness-screenshot")
 10. Submit     → Skill("rn-harness-submit")
 11. Retro      → Skill("rn-harness-retro")        # Pipeline retrospective
@@ -295,3 +299,4 @@ AdMob(Phase 7) 완료 후 Build로 넘어가기 전에 AskUserQuestion으로 빌
 2. **state.md 동기화**: 매 Phase 전환 시 반드시 업데이트
 3. **Git commit per phase**: 각 Phase 완료 시 커밋
 4. **PAUSE 존중**: 수동 작업 필요 시 반드시 사용자 확인 대기
+5. **사용자 승인 게이트**: Phase 7.5에서 사용자가 명시적으로 승인하기 전에는 빌드/제출 실행 금지 (`skip_acceptance: true`가 아닌 한)
