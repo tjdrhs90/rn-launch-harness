@@ -139,6 +139,10 @@ ios_review:
 # App Identity (양 플랫폼 동일)
 bundle_id: ""               # com.{company}.{appname} — iOS/Android 동일
 
+# Build
+build:
+  method: eas             # eas | local — Phase 8 진입 시 결정 (EAS 무료 플랜 꽉 차면 local)
+
 # Store Submission
 ios:
   enabled: true
@@ -193,7 +197,7 @@ Pipeline phase order depends on mode:
     ↳ FAIL → Generator fix → re-evaluate (max 3 rounds)
     ↳ PASS → Next phase
  7. AdMob      → Skill("rn-harness-admob")        # Smart ad placement
- 8. Build      → Skill("rn-harness-build")        # EAS Build
+ 8. Build      → EAS: Skill("rn-harness-build") / EAS-free: Skill("rn-harness-build-local")
  9. Screenshot → Skill("rn-harness-screenshot")   # Store screenshots
 10. Submit     → Skill("rn-harness-submit")       # App Store + Google Play
 ```
@@ -243,6 +247,18 @@ Strict mode (`--strict`):
 - Each phase has its own round limit
 - Phase 6.3 launches 6 parallel Agent Team
 - `max_rounds` per QA phase → force advance to next phase
+
+**Build Method 선택 (Phase 8 진입 시):**
+
+AdMob(Phase 7) 완료 후 Build로 넘어가기 전에 AskUserQuestion으로 빌드 방식을 결정:
+
+| 선택지 | 라우팅 | 조건 |
+|--------|--------|------|
+| EAS Build (기본) | `rn-harness-build` | EAS 계정에 프로젝트 슬롯 여유 있음 |
+| EAS 없이 로컬 빌드 | `rn-harness-build-local` | **EAS 무료 플랜 꽉 참(3개 제한)** / EAS 사용 원치 않음 |
+
+- 선택 결과를 `config.md`의 `build.method`(`eas` | `local`)에 기록.
+- `local`이면 Submit 단계의 iOS 바이너리 업로드도 fastlane/Transporter 경로 사용 (Android는 원래 Google Play API라 동일).
 
 **PAUSE 처리:**
 - 수동 작업 필요 시 (AdMob, Android Play Console)

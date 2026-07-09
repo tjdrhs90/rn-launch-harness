@@ -46,16 +46,26 @@ App Store Connect API Key is required.
 Press Enter when done. (Type "eas" if already configured in EAS)
 ```
 
-### A-2: EAS Submit (Build Upload)
+### A-2: Binary Upload
 
+**If `config.md → build.method` is `eas`:**
 ```bash
 eas submit --platform ios --profile production --non-interactive
 ```
-
-Or with specific build URL:
+Or with a specific build URL:
 ```bash
 eas submit --platform ios --url [BUILD_URL] --non-interactive
 ```
+
+**If `build.method` is `local` (EAS-free — see `rn-harness-build-local`):** upload the local `.ipa` without EAS, using the same ASC API key:
+```bash
+# fastlane (recommended)
+fastlane pilot upload            # → TestFlight
+# or
+xcrun altool --upload-app -f app.ipa --type ios \
+  --apiKey $ASC_KEY_ID --apiIssuer $ASC_ISSUER_ID
+```
+Android is unaffected — Part B already uploads the AAB via the Google Play API, EAS or not.
 
 ### A-3: App Store Connect API — Metadata
 

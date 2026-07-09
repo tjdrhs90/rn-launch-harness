@@ -4,8 +4,11 @@ node_modules/
 
 # Credentials — 절대 git에 올리지 않음
 credentials/
+credentials.json
 *.p8
 *.p12
+*.jks
+*.keystore
 *-sa.json
 service-account*.json
 
