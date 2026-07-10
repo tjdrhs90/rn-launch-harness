@@ -199,6 +199,20 @@ Type "skip" to use Google test ad IDs for now (replace before release).
   - Android App Open: `ca-app-pub-3940256099942544/9257395921`
 - Implement `__DEV__` conditional for test/production ID switching
 
+### Step 5.5: iOS SKAdNetwork Identifiers (ad attribution)
+
+iOS 14+ attributes ad-driven installs via **SKAdNetwork**. If the network IDs aren't in `Info.plist`, iOS ad-revenue attribution and reporting are degraded — the app still runs and ads still show, but you lose install attribution. Google provides an **advised list** and the `react-native-google-mobile-ads` config plugin injects it via the `skAdNetworkItems` option.
+
+1. Fetch the **current** advised identifiers (the list changes over time):
+   https://developers.google.com/admob/ios/3p-skadnetworks
+2. Populate `skAdNetworkItems` in the `react-native-google-mobile-ads` plugin block of `app.config.ts` (see generator scaffold). At minimum keep Google's own `cstr6suwn9.skadnetwork`; add the rest of the advised third-party IDs.
+3. After `expo prebuild` (Phase 8), verify they landed:
+   ```bash
+   /usr/libexec/PlistBuddy -c "Print :SKAdNetworkItems" ios/*/Info.plist | head
+   ```
+
+> Do NOT hardcode a stale list permanently — refresh from Google's page around each release.
+
 ### Step 6: Implement Ad Code
 
 #### 6a-prereq. UMP (User Messaging Platform) — REQUIRED for EU/UK users
@@ -550,6 +564,7 @@ next_role: rn-harness-build
 
 - `react-native-google-mobile-ads` must be installed
 - `app.config.ts` must have AdMob plugin config
+- iOS `skAdNetworkItems` populated from Google's advised list (SKAdNetwork attribution) — verify in `Info.plist` after prebuild
 - Test/production ID switching logic required (`__DEV__` conditional)
 - All ad code must follow FSD structure (`features/ads/`)
 - Banner on ALL screens except explicitly excluded ones

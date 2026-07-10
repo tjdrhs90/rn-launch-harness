@@ -199,6 +199,15 @@ export default {
       {
         androidAppId: "ca-app-pub-XXXX~ZZZZ",
         iosAppId: "ca-app-pub-XXXX~YYYY",
+        // iOS 14+ SKAdNetwork attribution. Without these, iOS install
+        // attribution / ad-revenue reporting is degraded. The plugin injects
+        // them into Info.plist as SKAdNetworkItems. Google's advised list
+        // CHANGES — refresh from the URL below at build time (Phase 8):
+        // https://developers.google.com/admob/ios/3p-skadnetworks
+        skAdNetworkItems: [
+          "cstr6suwn9.skadnetwork", // Google (baseline)
+          // ...paste the rest of Google's current advised identifiers
+        ],
       },
     ],
   ],
