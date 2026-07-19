@@ -244,8 +244,10 @@ Upper layers may only reference lower layers. No cross-layer imports at the same
 
 ## Pipeline Output
 
+Each run is isolated: Phase 1–4 stage under `.rn-harness/<run-id>/`, then Phase 5 graduates it to a top-level `<app-slug>/` Expo project with the artifacts moved inside — so multiple runs in one directory never collide.
+
 ```
-docs/harness/
+<app-slug>/docs/harness/
 ├── specs/           # Market research results
 ├── plans/           # PRD + design system
 ├── contract.md      # Generator↔Evaluator agreed criteria

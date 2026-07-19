@@ -25,21 +25,27 @@ allowed-tools: [Agent, Read, Write, Edit, Bash, Glob, Grep]
 
 #### Step 1: Project Scaffolding
 
-Read `app_slug` from `docs/harness/config.md` (set during Phase 2).
-The Expo project is created as a **subdirectory** of the current working directory, keeping the claude session history intact.
+Read `app_slug` and `workspace_dir` from `docs/harness/config.md` / `state.md` (set during Phase 2). Until now the pipeline has been running in the **staging folder** `.rn-harness/$RUN_ID/`. This phase **graduates** it to a top-level Expo project named `$APP_SLUG` and moves the harness artifacts inside — so each run ends up as its own clean project folder with no shared root `docs/`.
 
 ```bash
+# Run from the run-directory root (parent of .rn-harness/).
 # $APP_SLUG = kebab-case app name from config.md (e.g., budget-book)
-npx create-expo-app@latest $APP_SLUG
-cd $APP_SLUG
+# $RUN_ID   = staging id from state.md (e.g., run-20260709-113045)
+
+npx create-expo-app@latest "$APP_SLUG"          # creates ./$APP_SLUG (its own git repo)
+mv ".rn-harness/$RUN_ID/docs" "$APP_SLUG/docs"  # move all harness artifacts in
+rm -rf ".rn-harness/$RUN_ID"                     # remove now-empty staging
+rmdir .rn-harness 2>/dev/null || true            # remove container if no other runs
+
+cd "$APP_SLUG"
 mkdir -p credentials
 
-# Move harness artifacts into the project (from parent directory)
-mv ../docs ./ 2>/dev/null || true
+# Record the graduated location so later phases + resume cd here.
+# state.md → workspace_dir: $APP_SLUG
 ```
 
 **NOTE**: Always use `npx create-expo-app@latest` to get the latest Expo SDK version.
-**NOTE**: After project creation, `docs/harness/` is moved inside the project so all artifacts are in one git repo. The parent directory only retains `.claude/` session history.
+**NOTE**: After graduation, all artifacts live inside `$APP_SLUG/docs/harness/` (one git repo). **Update `state.md` `workspace_dir` to `$APP_SLUG`** — Phase 6+ and `--resume` rely on it. The run-directory retains only `.claude/` and any other runs still staging under `.rn-harness/`.
 
 #### Step 1.1: Clean Up Default Template Files (MANDATORY)
 

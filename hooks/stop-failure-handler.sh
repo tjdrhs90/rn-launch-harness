@@ -4,19 +4,27 @@
 
 set -euo pipefail
 
-STATE_FILE="docs/harness/state.md"
-LOG_FILE="docs/harness/pipeline-log.md"
+# 런은 격리된 워크스페이스에 있으므로 state.md 경로가 고정이 아니다.
+# 스테이징(.rn-harness/*/), 졸업 프로젝트(*/), 레거시(docs/) 중
+# status: running 인 state.md를 찾아 가장 최근 것을 고른다.
+STATE_FILE=""
+while IFS= read -r candidate; do
+  [ -f "$candidate" ] || continue
+  status=$(grep "^status:" "$candidate" | head -1 | awk '{print $2}')
+  [ "$status" = "running" ] || continue
+  if [ -z "$STATE_FILE" ] || [ "$candidate" -nt "$STATE_FILE" ]; then
+    STATE_FILE="$candidate"
+  fi
+done < <(find . -maxdepth 5 \
+  \( -path './.rn-harness/*/docs/harness/state.md' \
+     -o -path './*/docs/harness/state.md' \
+     -o -path './docs/harness/state.md' \) 2>/dev/null)
 
-# state.md가 없으면 하네스 프로젝트가 아님
-if [ ! -f "$STATE_FILE" ]; then
-  exit 0
-fi
+# running 상태의 하네스가 없으면 종료
+[ -n "$STATE_FILE" ] || exit 0
 
-# 현재 상태 확인
-CURRENT_STATUS=$(grep "^status:" "$STATE_FILE" | head -1 | awk '{print $2}')
-if [ "$CURRENT_STATUS" != "running" ]; then
-  exit 0
-fi
+STATE_DIR=$(dirname "$STATE_FILE")
+LOG_FILE="$STATE_DIR/pipeline-log.md"
 
 # 에러 메시지에서 rate_limit 감지
 ERROR_MSG="${CLAUDE_STOP_ERROR:-}"

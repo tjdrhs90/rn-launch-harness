@@ -36,44 +36,48 @@ Save app description as `$APP_IDEA`.
 
 ### Step 1: Bootstrap
 
-**Project structure:** During Phase 5, the Expo project is created as a **subdirectory** named after the app (kebab-case). All harness artifacts (`docs/harness/`) live **inside** the Expo project so everything stays in one git repo.
+**Per-run isolation:** every pipeline run gets its **own unique workspace folder**, so multiple runs launched in the same directory never collide on `docs/harness/`. **Nothing is written to a shared root-level `docs/`.**
 
-Before Phase 5 (research/plan/design), `docs/harness/` is created in the current working directory temporarily. When the Expo project is created in Phase 5, the Generator **moves** `docs/harness/` into the project directory.
+- **Phase 1–4** run inside a unique **staging folder** `.rn-harness/<run-id>/` — in idea-discovery mode the app name isn't known yet, so a timestamp id is used.
+- **Phase 5 (Generator)** creates the real Expo project as a top-level `$APP_SLUG/` folder and **moves** the harness artifacts into it. The empty staging folder is then removed.
 
 ```
-current-directory/          ← claude session here (history preserved)
-├── .claude/                ← session history (stays here)
-└── $APP_SLUG/              ← Expo project (created in Phase 5)
-    ├── app/
-    ├── src/
-    ├── docs/harness/       ← pipeline artifacts (inside project)
-    │   ├── specs/
-    │   ├── plans/
-    │   ├── handoff/
-    │   ├── feedback/
-    │   ├── references/
-    │   ├── screenshots/
-    │   ├── store-assets/
-    │   ├── config.md
-    │   ├── state.md
-    │   ├── build-log.md
-    │   └── pipeline-log.md
-    ├── scripts/
-    │   └── publish.js
-    ├── credentials/
-    ├── .env
-    ├── .gitignore
-    └── ...
+run-directory/                     ← where /rn-harness was invoked (may host MANY runs)
+├── .claude/                       ← session history
+├── .rn-harness/                   ← staging container for in-progress runs
+│   ├── run-20260709-113045/       ← run A (Phase 1–4) — UNIQUE per invocation
+│   │   └── docs/harness/
+│   │       ├── config.md · state.md · pipeline-log.md · build-log.md
+│   │       ├── specs/ plans/ handoff/ feedback/ references/
+│   │       └── screenshots/ store-assets/
+│   └── run-20260709-124512/       ← run B — separate folder → NO collision
+│       └── docs/harness/
+└── budget-book/                   ← run A after Phase 5: Expo project (docs moved in)
+    ├── app/ · src/ · scripts/publish.js · credentials/ · .env · .gitignore
+    └── docs/harness/              ← artifacts now live inside the project
 ```
 
-`$APP_SLUG` is derived from the app name in kebab-case (e.g., "가계부 앱" → `budget-book`, "커피 구독" → `coffee-tracker`). Determined during Phase 2 (Plan) and stored in `config.md` as `app_slug`.
-
-**Phase 1~4**: `docs/harness/` is in the current directory (temporary).
-**Phase 5 (Generator)**: After `create-expo-app`, move `docs/harness/` into the project:
+**Bootstrap steps:**
 ```bash
-mv docs/harness/ $APP_SLUG/docs/harness/
+RUN_ID="run-$(date +%Y%m%d-%H%M%S)"     # unique per invocation
+WORKSPACE=".rn-harness/$RUN_ID"
+mkdir -p "$WORKSPACE/docs/harness"
 ```
-**Phase 6+**: All work happens inside `$APP_SLUG/`.
+Record `run_id` and `workspace_dir` in `state.md` (Step 5).
+
+`$APP_SLUG` (kebab-case app name, e.g. "가계부 앱" → `budget-book`) is decided in **Phase 2 (Plan)**, stored in `config.md` as `app_slug`. It becomes the **project folder name at Phase 5** — not before.
+
+**Dispatch rule (applies to every phase):** before doing work, each phase agent reads `workspace_dir` from `state.md` and `cd`s into it. Phases 1–4 → `cd .rn-harness/$RUN_ID`. Phase 5+ → `cd $APP_SLUG`.
+
+**Phase 5 graduation (Generator does this):**
+```bash
+# from the run-directory root:
+npx create-expo-app@latest "$APP_SLUG"
+mv ".rn-harness/$RUN_ID/docs" "$APP_SLUG/docs"
+rm -rf ".rn-harness/$RUN_ID"            # remove now-empty staging
+# then update state.md → workspace_dir: $APP_SLUG
+```
+**Phase 6+**: all work happens inside `$APP_SLUG/`.
 
 ### Step 2: Reference Capture
 
@@ -169,6 +173,8 @@ admob:
 `docs/harness/state.md` 생성:
 ```yaml
 status: running
+run_id: run-YYYYMMDD-HHMMSS      # unique per invocation
+workspace_dir: .rn-harness/run-YYYYMMDD-HHMMSS   # updated to $APP_SLUG at Phase 5
 current_phase: research
 current_round: 0
 next_role: rn-harness-research
@@ -178,9 +184,10 @@ updated_at: YYYY-MM-DD HH:mm
 
 ### Step 6: Git Commit
 
+Commit inside the run's workspace (git is initialized for real at Phase 5 by `create-expo-app`; before that this is best-effort):
 ```bash
-git add docs/harness/
-git commit -m "chore: bootstrap harness pipeline"
+cd "$WORKSPACE"
+git add docs/harness/ 2>/dev/null && git commit -m "chore: bootstrap harness pipeline" 2>/dev/null || true
 ```
 
 ### Step 7: Role Loop

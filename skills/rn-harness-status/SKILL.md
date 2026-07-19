@@ -21,6 +21,21 @@ allowed-tools: [Read, Bash, Glob, Grep]
 
 ## Process
 
+### Step 0: 런 워크스페이스 탐색
+
+런은 격리된 폴더에 있으므로 `state.md`가 고정 경로에 없다:
+```bash
+find . -maxdepth 5 \
+  \( -path './.rn-harness/*/docs/harness/state.md' \
+     -o -path './*/docs/harness/state.md' \
+     -o -path './docs/harness/state.md' \) 2>/dev/null
+```
+- 1개 → 그 워크스페이스 사용.
+- 여러 개 → 각 `run_id`·`current_phase`·`status`를 한 줄씩 나열(여러 런 동시 표시). 특정 런만 보려면 사용자가 지정.
+- 0개 → "진행 중인 파이프라인 없음".
+
+이후 경로는 선택된 워크스페이스의 `docs/harness/` 기준.
+
 ### Step 1: state.md 읽기
 
 `docs/harness/state.md`에서:
