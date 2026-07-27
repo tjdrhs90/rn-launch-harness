@@ -200,6 +200,21 @@ Pick one (all use the ASC API key from `rn-harness-submit` A-1):
 
 Then metadata + review submission via the **App Store Connect API** exactly as in `rn-harness-submit` A-3 (that part never used EAS).
 
+> **If you upload screenshots with `fastlane deliver` instead of the ASC API** (some prefer it), it **appends by default** — running it more than once (or leaving stale files in the folder) stacks duplicate screenshots on the listing. This is a confirmed footgun. Guard it:
+> - **Clear the folder first**, leave only the final images: `rm -rf fastlane/screenshots/* && cp <final PNGs> fastlane/screenshots/`
+> - Pass **`--overwrite_screenshots true`** (replace instead of append), plus `--skip_binary_upload true --skip_metadata true` when uploading screenshots only.
+> - Keep **one image per device-size slot** — a single PNG matching several size slots lands in each, showing the same picture multiple times.
+> ```bash
+> # fastlane/Deliverfile (screenshots only)
+> api_key_path("./credentials/asc-api-key.json")
+> app_identifier("com.company.app")
+> screenshots_path("./fastlane/screenshots")
+> overwrite_screenshots(true)
+> skip_binary_upload(true)
+> skip_metadata(true)
+> run_precheck_before_submit(false)
+> ```
+
 ---
 
 ## Output

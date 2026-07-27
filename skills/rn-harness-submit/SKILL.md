@@ -95,9 +95,14 @@ EAS Submit handles the binary upload. Additional metadata via ASC API:
 5. **Copyright**
    - `config.md → developer.copyright`
 
-6. **Screenshot Upload**
-   - iPhone 6.7" screenshots only (supportsTablet: false → no iPad)
-   - Create screenshot set → upload binary → commit
+6. **Screenshot Upload** (idempotent — DELETE existing before upload)
+   - iPhone 6.7" (`APP_IPHONE_67`) screenshots only (supportsTablet: false → no iPad)
+   - **CRITICAL — clear existing first, or re-runs pile up duplicates.** The ASC API *appends* to a screenshot set; uploading again without clearing stacks a second (third…) copy of every shot. This is the #1 cause of "each screenshot appears twice." Mirror the Android path, which already deletes before upload (`templates/publish.js` → `images.deleteall`).
+   - Order per locale:
+     1. `GET` the version's `appStoreVersionLocalizations` → `appScreenshotSets` for `screenshotDisplayType = APP_IPHONE_67`
+     2. **`DELETE` every existing `appScreenshots` in that set** (or delete the set and recreate)
+     3. Create the set if missing → reserve → upload binary → commit
+   - **One display type only.** Upload each PNG to exactly one `screenshotDisplayType`. Do NOT reuse the same image across multiple size slots (6.7"/6.5"/…) — that makes "the same picture appears several times" on the listing.
 
 7. **Build Assignment**
    - Wait for build processing (`processingState: VALID`)
@@ -372,6 +377,8 @@ current_phase: done
 - iOS: EAS build must succeed before submission
 - Android: Manual Play Console steps must be confirmed before API calls
 - Screenshots and metadata must exist before submission
+- iOS screenshots: DELETE existing shots in the set before uploading (idempotent re-runs; matches Android `publish.js` deleteall) — never append
+- iOS: upload each image to exactly one `screenshotDisplayType` (no reusing one PNG across size slots)
 - Privacy policy URL required for both stores
 - Service Account JSON must exist and be valid for Android API calls
 - Draft app detection: gracefully degrade to release notes update only
