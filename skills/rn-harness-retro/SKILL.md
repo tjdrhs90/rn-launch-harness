@@ -19,7 +19,12 @@ Retrospective analysis of a project built with the RN Launch Harness pipeline. E
 ## Arguments
 
 Parse `$ARGUMENTS` for:
-- `[project-dir]` — Target project path (default: current directory)
+- `[project-dir]` — Target project path. If omitted, **locate the graduated project** — runs graduate at Phase 5 into a top-level `<app-slug>/` folder, so `docs/harness/` is NOT at the run-directory root:
+  ```bash
+  # from the run-directory root: find completed pipelines
+  find . -maxdepth 4 -path './*/docs/harness/state.md' 2>/dev/null
+  ```
+  One match → `cd` into that `<app-slug>/`. Multiple → list `run_id`/`status` and ask which. Only fall back to current directory if you are already inside the project folder (`./docs/harness/state.md` exists).
 - `--run-app` — Attempt to build and run the app, verify it works on simulator
 - `--deep` — Deep analysis including source code review
 

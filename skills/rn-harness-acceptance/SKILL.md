@@ -21,7 +21,7 @@ Called by the orchestrator as Phase 7.5. Skipped only if `config.md → skip_acc
 ## Input
 
 - Project code (AdMob integration complete)
-- `docs/harness/handoff/plan.md` (PRD — core user journeys)
+- `docs/harness/plans/YYYY-MM-DD-prd.md` (PRD — core user journeys)
 - `docs/harness/config.md`
 
 ## Two parts

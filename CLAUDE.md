@@ -15,14 +15,14 @@ Anthropic의 [Harness Design for Long-Running Apps](https://www.anthropic.com/en
 ## Pipeline
 
 ```
-/rn-harness "앱 아이디어" → Research → Plan → Design → Contract → Build → QA → AdMob → Build → Screenshots → Submit
+/rn-harness "앱 아이디어" → Research → Plan → Design → Contract → Build → QA → AdMob → Accept(사용자 승인) → Build → Screenshots → Submit
 ```
 
 ## Key Directories
 
 - `skills/` — 각 Phase의 SKILL.md 정의
 - `hooks/` — 레이트 리밋 자동 재개 스크립트
-- `docs/harness/` — 파이프라인 산출물 (실행 시 생성)
+- 파이프라인 산출물 — **런별 격리**: Phase 1~4는 유니크한 `.rn-harness/<run-id>/`에 스테이징, Phase 5에서 최상위 `<app-slug>/`로 졸업하며 `docs/harness/`를 그 안으로 이동 (같은 폴더에서 여러 런 동시 실행 시 충돌 방지)
 
 ## Hard Gates
 

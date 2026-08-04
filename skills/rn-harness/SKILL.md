@@ -67,7 +67,8 @@ Record `run_id` and `workspace_dir` in `state.md` (Step 5).
 
 `$APP_SLUG` (kebab-case app name, e.g. "가계부 앱" → `budget-book`) is decided in **Phase 2 (Plan)**, stored in `config.md` as `app_slug`. It becomes the **project folder name at Phase 5** — not before.
 
-**Dispatch rule (applies to every phase):** before doing work, each phase agent reads `workspace_dir` from `state.md` and `cd`s into it. Phases 1–4 → `cd .rn-harness/$RUN_ID`. Phase 5+ → `cd $APP_SLUG`.
+**Dispatch rule (applies to every phase):** before doing work, each phase agent reads `workspace_dir` from `state.md` and `cd`s into it. Phases 1–4 → `cd .rn-harness/$RUN_ID`. Phase 6+ → `cd $APP_SLUG`.
+**Phase 5 is the exception:** the Generator runs from the **run-directory root** (parent of `.rn-harness/`) because it *creates* `$APP_SLUG/` and graduates the staging folder into it. It updates `workspace_dir` to `$APP_SLUG` only *after* the move — so at Phase 5 entry `workspace_dir` is still `.rn-harness/$RUN_ID` and `$APP_SLUG/` does not exist yet.
 
 **Phase 5 graduation (Generator does this):**
 ```bash

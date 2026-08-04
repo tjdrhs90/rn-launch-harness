@@ -10,7 +10,7 @@ set -euo pipefail
 STATE_FILE=""
 while IFS= read -r candidate; do
   [ -f "$candidate" ] || continue
-  status=$(grep "^status:" "$candidate" | head -1 | awk '{print $2}')
+  status=$(grep "^status:" "$candidate" 2>/dev/null | head -1 | awk '{print $2}' || true)
   [ "$status" = "running" ] || continue
   if [ -z "$STATE_FILE" ] || [ "$candidate" -nt "$STATE_FILE" ]; then
     STATE_FILE="$candidate"
@@ -49,7 +49,7 @@ if echo "$ERROR_MSG" | grep -qi "rate.limit\|too.many.requests\|429"; then
   fi
 
   # 5분 후 자동 재개 스케줄
-  echo "claude --skill harness-resume" | at now + 5 minutes 2>/dev/null || true
+  echo "claude --skill rn-harness-resume" | at now + 5 minutes 2>/dev/null || true
 
   echo "Rate limit detected. Pipeline paused. Auto-resume in 5 minutes."
 fi

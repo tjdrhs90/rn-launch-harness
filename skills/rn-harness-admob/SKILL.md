@@ -4,13 +4,13 @@ description: Phase 7 — Smart AdMob ad placement analysis and integration. Guid
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep, AskUserQuestion]
 ---
 
-# rn-harness-admob — Phase 6: AdMob Integration
+# rn-harness-admob — Phase 7: AdMob Integration
 
 Integrate AdMob ads into the app. Analyze the app to determine the best ad strategy, then guide the user through manual ad unit creation and inject code automatically.
 
 ## Trigger
 
-Called by the orchestrator as Phase 6.
+Called by the orchestrator as Phase 7.
 
 ## Input
 
@@ -556,8 +556,8 @@ git commit -m "feat: integrate AdMob ads with smart placement strategy"
 ## State Update
 
 ```yaml
-current_phase: build
-next_role: rn-harness-build
+current_phase: acceptance
+next_role: rn-harness-acceptance   # Phase 7.5 human gate before build (skip handled inside that skill if skip_acceptance)
 ```
 
 ## HARD GATES
