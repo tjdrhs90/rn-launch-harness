@@ -49,7 +49,12 @@ if echo "$ERROR_MSG" | grep -qi "rate.limit\|too.many.requests\|429"; then
   fi
 
   # 5분 후 자동 재개 스케줄
-  echo "claude --skill rn-harness-resume" | at now + 5 minutes 2>/dev/null || true
+  # NOTE: `at` 잡은 기본적으로 $HOME에서 실행되므로, resume 스킬이 워크스페이스를
+  # 탐색하려면 반드시 이 실행 디렉터리(run-directory root)로 cd 해줘야 한다.
+  # macOS에선 atrun이 기본 비활성 — 자동재개를 쓰려면 한 번:
+  #   sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist
+  RUN_DIR="$(pwd)"
+  echo "cd $(printf %q "$RUN_DIR") && claude --skill rn-harness-resume" | at now + 5 minutes 2>/dev/null || true
 
   echo "Rate limit detected. Pipeline paused. Auto-resume in 5 minutes."
 fi

@@ -178,10 +178,17 @@ bundle_id: "com.{company}.{slug}" # e.g., com.gonigon.budgetbook (no hyphens)
 
 ## State Update
 
+`config.md → with_spec`에 따라 분기 (Phase 2.5 spec는 옵션):
 ```yaml
+# with_spec: true  → Phase 2.5 (Spec)로
+current_phase: spec
+next_role: rn-harness-spec
+
+# with_spec: false → 바로 Design으로 (기본)
 current_phase: design
 next_role: rn-harness-design
 ```
+(spec 완료 후 `rn-harness-spec`가 다시 `rn-harness-design`으로 넘긴다.)
 
 ## HARD GATES
 

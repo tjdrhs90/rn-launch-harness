@@ -263,4 +263,5 @@ next_role: rn-harness-screenshot
 - Android AAB must exist and be signed with the correct (upload) key
 - iOS: if no macOS, explicitly report iOS cannot be built locally (don't silently skip)
 - OTA strategy recorded; if "skip", user told JS fixes need store re-submission
+- If uploading iOS screenshots via `fastlane deliver`: clear the folder first + `overwrite_screenshots(true)` + one image per size slot (else duplicates)
 - Build failure blocks next Phase
