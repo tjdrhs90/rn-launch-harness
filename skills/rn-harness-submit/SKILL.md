@@ -21,6 +21,53 @@ Called by the orchestrator as Phase 10.
 
 ---
 
+## Part 0: Pre-submission checks — run these before anything else
+
+Every one of these has caused a real rejection. See `docs/store-gotchas.md` for the full
+write-ups. Four checks, all cheap:
+
+**1. No placeholder purpose strings in the generated `Info.plist`.**
+Reading `app.json` is not enough — **Expo applies a package's config plugin whenever the
+package is a dependency, whether or not it is listed in `plugins`.** `expo-image-picker` and
+`expo-camera` inject `NSMicrophoneUsageDescription = "Allow $(PRODUCT_NAME) to access your
+microphone"`, which Apple rejects under 5.1.1.
+
+```bash
+npx expo prebuild -p ios --clean --no-install
+plutil -p ios/*/Info.plist | grep -i usagedescription
+# any "Allow $(PRODUCT_NAME) to ..." → fix before submitting
+```
+
+Fix — if the app only picks photos, drop the key rather than writing a string for a capability
+the app does not use:
+
+```json
+["expo-image-picker", { "microphonePermission": false }]
+["expo-camera",       { "microphonePermission": false }]
+```
+
+**2. Every declared permission belongs to a feature a user can reach.** For each
+`NS*UsageDescription` and each Android permission, name the screen that uses it and the path a
+user takes to get there. A permission for an unreachable or not-yet-built feature is a
+rejection, and "we will use it later" in the review notes makes it worse.
+
+**3. Age rating declarations are complete** — especially `advertising` = Yes for any AdMob
+build (step A-3.9). Cannot be verified over the API; check the Connect UI.
+
+**4. Android: read the *merged* manifest, not yours.** Dependencies merge in their own
+permissions, and Play Console will demand a declaration for them.
+
+```bash
+grep uses-permission \
+  android/app/build/intermediates/merged_manifests/release/AndroidManifest.xml
+```
+
+`FOREGROUND_SERVICE_*` needs a Play Console declaration **with a mandatory demo video**;
+`SCHEDULE_EXACT_ALARM`, `QUERY_ALL_PACKAGES`, and `READ_MEDIA_*` need declarations too. Past
+the compliance deadline these block updates while the live listing stays up — easy to miss.
+
+---
+
 ## Part A: iOS — App Store Submission (Fully Automated)
 
 ### A-1: Credential Check
@@ -112,9 +159,54 @@ EAS Submit handles the binary upload. Additional metadata via ASC API:
    - Contact: `config.md → ios_review` (first_name, last_name, phone)
    - Demo account (if needed — AskUserQuestion)
    - Encryption: No (ITSAppUsesNonExemptEncryption: false)
+   - **Notes** (`appStoreReviewDetail.notes`) — readable and writable, and reviewers read it.
+     This is the only reviewer-facing channel the API can touch (Resolution Center has none).
+     Write what the app does that a reviewer might otherwise misread. State facts only — a note
+     saying a permission is there "for a future feature" gets the build rejected.
+     **When resubmitting after a rejection, update the notes BEFORE submitting**, not after.
 
-9. **Submit for Review**
-   - `POST /v1/reviewSubmissions`
+9. **Age Rating Declarations** — required, and easy to miss
+
+   `PATCH /v1/apps/{id}/relationships/ageRatingDeclaration` (or the version's
+   `ageRatingDeclaration`). Apple added questions in 2026; an app that only answered the old
+   questionnaire has them unset and **cannot enter review**:
+
+   ```
+   userGeneratedContent · messagingAndChat · ageAssurance · gunsOrOtherWeapons
+   advertising · healthOrWellnessTopics · parentalControls
+   ```
+
+   - **If AdMob is enabled, `advertising` MUST be Yes.** Banners count. Getting this wrong
+     gets the build bounced by Apple's automated analysis before a human sees it.
+   - Unset attributes surface as `409 STATE_ERROR.ENTITY_STATE_INVALID` at submit time.
+   - **`GET` on `ageRatingDeclarations` returns `403`** — write-only. You cannot verify over
+     the API; check the Connect web UI if you need to confirm.
+
+10. **Submit for Review** — three calls, not one
+
+    `POST /v1/appStoreVersionSubmissions` is **deprecated** and returns
+    `403 "Allowed operation is: DELETE"`. Use `reviewSubmissions`:
+
+    ```
+    a. POST  /v1/reviewSubmissions        { platform: IOS, app: <appId> }
+             → reuse an existing submission in state READY_FOR_REVIEW if one exists
+    b. POST  /v1/reviewSubmissionItems    { reviewSubmission: <id>, appStoreVersion: <id> }
+    c. PATCH /v1/reviewSubmissions/<id>   { submitted: true }
+    ```
+
+    **Resubmitting after a rejection** — the rejected version is still attached to the
+    submission that was rejected, so step (b) fails with
+    `STATE_ERROR.ITEM_PART_OF_ANOTHER_SUBMISSION`. Detach first: for every submission in
+    state `UNRESOLVED_ISSUES`, `PATCH /v1/reviewSubmissionItems/<itemId> { removed: true }`.
+
+    Also do **not** create a new version for a rejection. `REJECTED`, `DEVELOPER_REJECTED`,
+    `METADATA_REJECTED`, and `INVALID_BINARY` are all editable — attach the new build to the
+    same version. Creating a second version with the same version string fails with
+    `ENTITY_ERROR.ATTRIBUTE.INVALID.DUPLICATE`.
+
+    **Metadata stays editable through `WAITING_FOR_REVIEW` and `IN_REVIEW`.** It locks at
+    `READY_FOR_SALE`, where `PATCH` returns `409`. A wrong release note is fixable right up
+    until release — and unfixable one minute after.
 
 ### A-4: iOS Result
 
@@ -384,3 +476,6 @@ current_phase: done
 - Draft app detection: gracefully degrade to release notes update only
 - Submission failure: analyze error, report to user, do NOT retry blindly
 - publish.js must be generated with correct package name and config values
+- Part 0 checks pass: no placeholder purpose strings, no permission without a reachable feature, age rating declarations set (`advertising` = Yes when AdMob is on), merged Android manifest reviewed
+- iOS submit uses the `reviewSubmissions` 3-call flow — `appStoreVersionSubmissions` CREATE is deprecated (403)
+- Resubmission after rejection: reuse the rejected version, detach stale `reviewSubmissionItems` (`removed: true`), update review notes BEFORE submitting

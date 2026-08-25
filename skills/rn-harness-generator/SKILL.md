@@ -190,7 +190,14 @@ export default {
     package: "com.{company}.{appname}", // iOS와 동일
     versionCode: 1,
     adaptiveIcon: {
+      // SAFE ZONE: foregroundImage is drawn on a 108dp canvas, the launcher masks
+      // it to 72dp, and only the centre ~66dp circle is guaranteed unclipped.
+      // Keep the motif inside ~50% of the canvas width (~25% padding on all four
+      // sides). Reusing the full-bleed 1024x1024 icon.png here is the usual cause
+      // of an icon that looks cropped and zoomed on Android.
       foregroundImage: "./assets/images/adaptive-icon.png",
+      // Android 13+ themed icons: white-on-transparent silhouette, same safe zone.
+      monochromeImage: "./assets/images/adaptive-icon-mono.png",
       backgroundColor: "#ffffff",
     },
     // SafeArea: Android에서도 상태바/네비게이션바 침범 방지
