@@ -230,40 +230,18 @@ export default {
 #### Step 1.6: ATT (App Tracking Transparency) 구현
 
 iOS에서 AdMob 광고 최적화를 위해 광고 추적 권한 요청이 필요.
-**앱 마운트 직후 바로 요청하면 얼럿이 안 나오므로 반드시 딜레이를 준다.**
 
-`src/core/providers/TrackingProvider.tsx`:
-```typescript
-import { useEffect } from 'react';
-import { Platform } from 'react-native';
-import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
+**여기서 ATT 를 직접 부르지 않는다.** ATT 는 UMP 동의 폼이 닫힌 뒤에
+`initializeAds()` 안에서 이어서 요청한다 (Phase 7 admob 스킬 참고). 이유:
 
-export function useTrackingPermission() {
-  useEffect(() => {
-    if (Platform.OS !== 'ios') return;
-    
-    // 앱 완전히 로드된 후 2초 딜레이
-    const timer = setTimeout(async () => {
-      await requestTrackingPermissionsAsync();
-    }, 2000);
-    
-    return () => clearTimeout(timer);
-  }, []);
-}
-```
+- AdMob 콘솔에 만드는 ATT 안내 메시지가 "다음 화면에서 '허용'을 탭하세요"
+  라고 말한다. ATT 가 먼저 뜨면 그 안내가 앞뒤가 안 맞는다.
+- 타이머 두 개(ATT 2초 / UMP 2.5초)로 순서를 맞추면 경쟁이 된다. ATT 얼럿이
+  조금만 늦게 떠도 UMP 폼이 그 위에 겹친다. 실제로 출시된 앱에서 두 개가
+  한꺼번에 떴다 (2026-08, 51개 앱 점검에서 발견).
 
-Root `_layout.tsx`에서 호출:
-```typescript
-import '../global.css';
-import { useTrackingPermission } from '@core/providers/TrackingProvider';
-
-export default function RootLayout() {
-  useTrackingPermission();
-  // ...
-}
-```
-
-**HARD GATE**: ATT 없이 AdMob 사용 시 Apple 심사 리젝 사유.
+**HARD GATE**: ATT 없이 AdMob 사용 시 Apple 심사 리젝 사유. 단, 호출 위치는
+`initializeAds()` 한 곳뿐이어야 한다. `_layout.tsx` 에 별도 훅을 두지 않는다.
 
 #### Step 2: NativeWind 설정 (CRITICAL GATE)
 

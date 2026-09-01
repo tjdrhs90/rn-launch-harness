@@ -237,7 +237,13 @@ import mobileAds, {
   AdsConsentDebugGeography,
 } from 'react-native-google-mobile-ads';
 
+let started = false;
+
 export async function initializeAds(): Promise<void> {
+  // 두 번 들어오면 폼이 떠 있는 동안 ATT 가 뜬다. 한 번만 돌게 막는다.
+  if (started) return;
+  started = true;
+
   // 1. Request UMP consent info update
   const consentInfo = await AdsConsent.requestInfoUpdate({
     // For testing in non-EU regions, simulate EU geography:
@@ -247,7 +253,7 @@ export async function initializeAds(): Promise<void> {
     testDeviceIdentifiers: __DEV__ ? ['EMULATOR'] : [],
   });
 
-  // 2. Show consent form if required
+  // 2. Show consent form if required — this must finish before ATT
   if (
     consentInfo.isConsentFormAvailable &&
     consentInfo.status === AdsConsentStatus.REQUIRED
@@ -255,37 +261,67 @@ export async function initializeAds(): Promise<void> {
     await AdsConsent.showForm();
   }
 
-  // 3. Check final consent status
+  // 3. iOS ATT — only after the consent form is gone.
+  //    AdMob 의 ATT 안내 메시지가 "다음 화면에서 '허용'을 탭하세요" 라고
+  //    말하므로 순서가 뒤집히면 안내가 무의미해진다.
+  //    ATT 얼럿은 앱이 active 일 때만 뜬다. 아직이면 한 번만 기다린다.
+  if (Platform.OS === 'ios') {
+    await whenActive();
+    await requestTrackingPermissionsAsync();
+  }
+
+  // 4. Check final consent status
   const { canRequestAds } = await AdsConsent.getConsentInfo();
 
-  // 4. Initialize Mobile Ads SDK only after consent is resolved
+  // 5. Initialize Mobile Ads SDK only after consent is resolved
   if (canRequestAds) {
     await mobileAds().initialize();
   }
 }
+
+/** 앱이 foreground 로 올라올 때까지 기다린다. 이미 active 면 즉시 반환. */
+function whenActive(): Promise<void> {
+  if (AppState.currentState === 'active') return Promise.resolve();
+  return new Promise((resolve) => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        sub.remove();
+        resolve();
+      }
+    });
+  });
+}
 ```
 
-**Step 3**: Call `initializeAds()` once at app startup, after the tracking permission delay (iOS):
+임포트에 다음이 필요하다:
+
+```typescript
+import { AppState, Platform } from 'react-native';
+import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
+```
+
+**Step 3**: Call `initializeAds()` once at app startup. ATT 는 이 함수 안에서
+동의 폼 뒤에 이어서 요청한다 — **별도의 ATT 훅이나 타이머를 두지 않는다.**
 
 `app/_layout.tsx` (Root layout):
 ```typescript
 import { useEffect } from 'react';
-import { Platform } from 'react-native';
 import { initializeAds } from '@features/ads';
 
 export default function RootLayout() {
+  // UMP 동의 → (iOS) ATT → SDK 초기화. 순서가 이 함수 안에서 보장된다.
   useEffect(() => {
-    // iOS: wait for ATT prompt to settle before requesting consent
-    const delay = Platform.OS === 'ios' ? 2500 : 500;
-    const timer = setTimeout(() => {
-      initializeAds().catch(console.warn);
-    }, delay);
-    return () => clearTimeout(timer);
+    void initializeAds().catch(console.warn);
   }, []);
 
   // ...
 }
 ```
+
+> **왜 타이머를 쓰지 않나.** 전에는 ATT 를 2초, UMP 를 2.5초 타이머로 띄웠다.
+> 순서를 시간에 맡기면 경쟁이 된다 — ATT 얼럿이 조금만 늦어도 UMP 폼이 그
+> 위에 겹쳐 두 개가 한꺼번에 뜬다. 실제로 출시된 앱에서 그렇게 나갔다
+> (2026-08, 51개 앱 점검). 콜백으로 이어 붙이면 시간과 무관하게 순서가 선다.
 
 **Step 4**: Allow users to revisit consent (Settings screen):
 ```typescript

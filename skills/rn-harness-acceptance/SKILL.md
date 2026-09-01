@@ -76,6 +76,10 @@ Set `state.md` status to `paused`, then **AskUserQuestion**:
 ▶ 자동 E2E 스모크 결과:
   [flow별 PASS/FAIL 요약]
 
+▶ iOS 라면 앱을 지웠다가 다시 깔고 첫 실행을 꼭 보세요:
+  AdMob 동의 안내가 **혼자** 뜨고, '계속'을 누른 뒤에 추적 권한이 떠야 합니다.
+  두 개가 한꺼번에 뜨면 순서가 깨진 것입니다 (Phase 7 admob 스킬 참고).
+
 직접 써보고 아래에서 선택하세요:
 ```
 
