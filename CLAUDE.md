@@ -32,6 +32,7 @@ Anthropic의 [Harness Design for Long-Running Apps](https://www.anthropic.com/en
 - 스텁 구현 = FAIL
 - 콘솔 에러 = FAIL
 - SafeAreaView 미사용 = FAIL
+- 화면 전환 시 PanResponder/JS 커스텀 흉내 = FAIL (반드시 `@react-navigation/native-stack` + `react-native-screens` 순정 네이티브 스택 사용)
 
 ## Store Submission
 
