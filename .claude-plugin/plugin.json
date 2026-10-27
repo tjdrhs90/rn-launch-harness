@@ -1,13 +1,13 @@
 {
   "name": "rn-launch-harness",
-  "description": "React Native app development harness — from market research to store submission. Automates the entire mobile app lifecycle: ideation, planning, design, development, AdMob integration, EAS build, screenshots, and App Store / Google Play submission.",
+  "description": "React Native app development harness for Claude Code, Antigravity, and Codex — from market research to store submission. Automates the entire mobile app lifecycle: ideation, planning, design, development, AdMob integration, EAS build, screenshots, and App Store / Google Play submission.",
   "version": "1.12.0",
   "author": {
     "name": "ssg"
   },
   "repository": "https://github.com/tjdrhs90/rn-launch-harness",
   "license": "MIT",
-  "keywords": ["react-native", "expo", "harness", "mobile", "app-store", "google-play", "admob", "pipeline", "generator", "evaluator"],
+  "keywords": ["react-native", "expo", "harness", "mobile", "app-store", "google-play", "admob", "pipeline", "generator", "evaluator", "antigravity", "codex", "multi-agent"],
   "hooks": {
     "StopFailure": [
       {
