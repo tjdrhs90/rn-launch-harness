@@ -242,6 +242,17 @@ Pipeline phase order depends on mode:
 
 ### Role Loop 규칙
 
+**Multi-Agent Execution Adapter (환경별 실행 매핑):**
+
+| 플랫폼 | Phase 스킬 호출 | 서브에이전트 실행 (컨텍스트 격리) | 사용자 질문/선택 |
+|---|---|---|---|
+| **Claude Code** | `Skill("rn-harness-<phase>")` | `Agent(role, prompt)` subprocess | `AskUserQuestion` |
+| **Antigravity** | `skills/rn-harness-<phase>/SKILL.md` 로드 | `invoke_subagent(TypeName="self", Role="...", Prompt="...")` | `ask_question` |
+| **Codex / OpenAI** | `skills/rn-harness-<phase>/SKILL.md` 지침 주입 | Agent subprocess / TaskRunner | CLI Prompt / Stdin |
+| **Generic CLI** | 파일 기반 지침 순차 실행 | 개별 실행 세션 | 대화형 입력 |
+
+*Note: 어떤 플랫폼에서 실행하든 `docs/harness/state.md`와 파일 기반 핸드오프 프로토콜은 100% 동일하게 유지됩니다.*
+
 **Phase 전환 시:**
 - Agent subprocess로 실행 (컨텍스트 리셋)
 - 이전 Phase 산출물은 파일로 핸드오프

@@ -12,10 +12,19 @@ React Native 모바일 앱을 **아이디어부터 스토어 출시까지** 자�
 
 ## 설치
 
+### Claude Code
 ```bash
 claude plugins marketplace add tjdrhs90/rn-launch-harness
 claude plugins install rn-launch-harness@rn-launch-harness
 ```
+
+### Google Antigravity 및 기타 AI 에이전트
+워크스페이스의 `.agents/skills/`에 스킬을 심볼릭 링크로 연결하여 사용합니다:
+```bash
+mkdir -p .agents/skills
+ln -s /path/to/rn-launch-harness/skills/rn-harness .agents/skills/rn-harness
+```
+OpenAI Codex, Antigravity 등 멀티 에이전트 연동 상세는 [docs/agent-compatibility.md](docs/agent-compatibility.md)를 참고하세요.
 
 ## 사용법
 

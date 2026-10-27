@@ -38,10 +38,19 @@ flowchart LR
 
 ## Install
 
+### Claude Code
 ```bash
 claude plugins marketplace add tjdrhs90/rn-launch-harness
 claude plugins install rn-launch-harness@rn-launch-harness
 ```
+
+### Google Antigravity & Other Agents
+Link the skill into your workspace's `.agents/skills/`:
+```bash
+mkdir -p .agents/skills
+ln -s /path/to/rn-launch-harness/skills/rn-harness .agents/skills/rn-harness
+```
+See [docs/agent-compatibility.md](docs/agent-compatibility.md) for OpenAI Codex, Antigravity, and generic agent integration details.
 
 ## Quick Start
 
