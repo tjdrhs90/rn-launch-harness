@@ -1,6 +1,12 @@
 # RN Launch Harness
 
-A Claude Code plugin that automates the **entire React Native mobile app lifecycle** — from market research to App Store & Google Play submission.
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Plugin-purple?logo=anthropic)](https://claude.ai/code)
+[![Google Antigravity](https://img.shields.io/badge/Google%20Antigravity-Compatible-4285F4?logo=google)](https://deepmind.google)
+[![OpenAI Codex](https://img.shields.io/badge/OpenAI%20Codex-Ready-412991?logo=openai)](https://openai.com)
+[![Multi-Agent](https://img.shields.io/badge/Agent%20Agnostic-Universal-blueviolet)](#install)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+An autonomous mobile app launch harness for **Claude Code, Google Antigravity, and OpenAI Codex** that automates the **entire React Native mobile app lifecycle** — from market research to App Store & Google Play submission.
 
 ![RN Launch Harness demo](.github/assets/demo.gif)
 
@@ -15,6 +21,16 @@ One command takes you from idea to store review. Market research, planning, desi
 Inspired by [Anthropic's Harness Design for Long-Running Apps](https://www.anthropic.com/engineering/harness-design-long-running-apps).
 
 [한국어](./README.ko.md)
+
+---
+
+## Supported Environments
+
+| Environment | Integration Method | Execution Interface |
+|---|---|---|
+| **Claude Code** | Native plugin (`.claude-plugin`) | `/rn-harness "idea"` |
+| **Google Antigravity** | Workspace skill (`.agents/skills/`) | `/rn-harness "idea"` or subagent |
+| **OpenAI Codex / CLI** | Skill prompt injection (`SKILL.md`) | Task instruction / Subprocess loop |
 
 ```mermaid
 flowchart LR

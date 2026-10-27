@@ -1,6 +1,13 @@
 # RN Launch Harness
 
-React Native 모바일 앱을 **아이디어부터 스토어 출시까지** 자동화하는 Claude Code 플러그인.
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Plugin-purple?logo=anthropic)](https://claude.ai/code)
+[![Google Antigravity](https://img.shields.io/badge/Google%20Antigravity-Compatible-4285F4?logo=google)](https://deepmind.google)
+[![OpenAI Codex](https://img.shields.io/badge/OpenAI%20Codex-Ready-412991?logo=openai)](https://openai.com)
+[![Multi-Agent](https://img.shields.io/badge/Agent%20Agnostic-Universal-blueviolet)](#설치)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+**Claude Code, Google Antigravity, OpenAI Codex** 및 AI 에이전트를 지원하는 자율 모바일 앱 런칭 하네스입니다.  
+React Native 모바일 앱을 **아이디어부터 스토어 출시까지** 전 과정을 자동화합니다.
 
 한 줄 명령으로 시장 조사, 기획, 디자인, 개발, AdMob 광고 통합, EAS 빌드, 스토어 스크린샷 촬영, App Store/Google Play 심사 제출까지 전체 파이프라인을 실행합니다.
 
@@ -9,6 +16,16 @@ React Native 모바일 앱을 **아이디어부터 스토어 출시까지** 자�
 [Anthropic의 Harness Design for Long-Running Apps](https://www.anthropic.com/engineering/harness-design-long-running-apps)에서 영감을 받아 제작.
 
 [English](./README.md)
+
+---
+
+## 지원 환경
+
+| 환경 | 연동 방식 | 실행 인터페이스 |
+|---|---|---|
+| **Claude Code** | 네이티브 플러그인 (`.claude-plugin`) | `/rn-harness "아이디어"` |
+| **Google Antigravity** | 워크스페이스 스킬 (`.agents/skills/`) | `/rn-harness "아이디어"` 또는 자연어 요청 |
+| **OpenAI Codex / CLI** | 스킬 지침 주입 (`SKILL.md`) | 태스크 명령 / 서브프로세스 루프 |
 
 ## 설치
 
