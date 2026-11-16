@@ -217,3 +217,19 @@ When sweeping many apps, do not derive the target list from directory layout. De
 apps by the presence of an `<app>-ios/` folder misses every Expo-standalone and Flutter app,
 which build iOS from the same directory. Enumerate from `GET /v1/apps` and reconcile against
 what you have locally.
+
+## TestFlight vs Google Play Internal Testing: Tester registration traps
+
+- **Google Play Developer API cannot set testers on internal tracks**:
+  `edits.testers` only accepts Google Groups, and **strictly rejects them on internal tracks**
+  (`Cannot set tester group on an internal track`). Moreover, there is no API endpoint to create
+  or bind individual user email lists to internal tracks. You **must** go to the Play Console
+  web UI once: **Testing → Internal testing → Testers tab**, select your tester email list, and save.
+  Subsequent uploads via API will then deploy automatically to those testers.
+- **TestFlight requires `isInternalGroup: true`**:
+  TestFlight beta groups can be created and managed 100% via ASC API (`POST /v1/betaGroups`).
+  However, if `isInternalGroup: true` is not explicitly set in the attributes, Apple defaults to
+  creating an **external** group. External groups require Apple Beta App Review before testers can
+  install builds, defeating the purpose of instant internal developer testing. Always set
+  `isInternalGroup: true` and link existing App Store Connect team members.
+

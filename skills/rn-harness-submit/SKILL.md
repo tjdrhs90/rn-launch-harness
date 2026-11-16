@@ -114,6 +114,20 @@ xcrun altool --upload-app -f app.ipa --type ios \
 ```
 Android is unaffected — Part B already uploads the AAB via the Google Play API, EAS or not.
 
+### A-2.5: TestFlight Internal Testing (Fully Automated)
+
+Once the first binary is uploaded and processing completes (`processingState: VALID`), automatically configure TestFlight internal testing for the developer:
+
+1. **Create Internal Beta Group** (if not already existing):
+   - `POST /v1/betaGroups` with attribute `"isInternalGroup": true`.
+   - **CRITICAL**: If `isInternalGroup: true` is omitted, Apple creates an **external** group which requires Beta App Review before anyone can test.
+2. **Add Developer as Internal Tester**:
+   - Query ASC team users (`GET /v1/users`) matching `config.md → developer.email`.
+   - Link user to the internal group: `POST /v1/betaGroups/{id}/relationships/betaTesters`.
+3. **Link Processed Build**:
+   - Link the build to the internal group: `POST /v1/betaGroups/{id}/relationships/builds`.
+   - Result: Instant distribution to the developer's TestFlight app without store review.
+
 ### A-3: App Store Connect API — Metadata
 
 EAS Submit handles the binary upload. Additional metadata via ASC API:
@@ -262,6 +276,11 @@ Please complete these in Play Console (https://play.google.com/console):
 7. COUNTRIES/REGIONS:
    - Production → Countries/regions
    - Select distribution countries
+
+8. INTERNAL TESTING TESTERS (1-time manual setup):
+   - Testing → Internal testing → Testers tab
+   - Select/create your email list (your developer account) and click Save.
+   - Note: The Google Play Developer API strictly rejects tester assignment on internal tracks (`Cannot set tester group on an internal track`), so this 1-time web UI step is required. Subsequent builds uploaded via API will automatically deploy to this list.
 
 Press Enter when all steps are complete.
 ```

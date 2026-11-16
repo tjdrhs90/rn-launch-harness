@@ -33,19 +33,23 @@ Anthropic의 [Harness Design for Long-Running Apps](https://www.anthropic.com/en
 - 콘솔 에러 = FAIL
 - SafeAreaView 미사용 = FAIL
 - 화면 전환 시 PanResponder/JS 커스텀 흉내 = FAIL (반드시 `@react-navigation/native-stack` + `react-native-screens` 순정 네이티브 스택 사용)
+- 임의의 커스텀 뒤로가기 헤더 바 남발 및 '(tabs)', '취소' 등 오표기 = FAIL (순정 네이티브 스택 헤더 우선, 루트 Stack 및 각 Screen에 `headerBackButtonDisplayMode: 'minimal'`, `headerBackTitle: ''`, `(tabs)` 스크린에 `title: ''` 설정 필수)
+- 글로벌 다국어 앱의 33개 공통 언어 바이너리/사전 누락 = FAIL (`check-localization-config.py` 100% PASS 필수)
+- 가로 분할 버튼 내 텍스트 오버플로우/잘림 방지(`adjustsFontSizeToFit`, `numberOfLines={1}`) 미적용 = FAIL
 
 ## Store Submission
 
 ### iOS (완전 자동)
 - App Store Connect API (JWT 인증)
 - Bundle ID 등록 → 앱 생성 → 메타데이터 → 스크린샷 → 빌드 → 연령 등급 → 심사 제출
+- **첫 빌드 내부 테스터 자동화**: `POST /v1/betaGroups` 시 반드시 `isInternalGroup: true` 지정 후 개발자 계정 연결 → 빌드 처리 완료 즉시 심사 없이 TestFlight 배포
 - 심사 제출은 `reviewSubmissions` **3-call 플로우**. `appStoreVersionSubmissions` CREATE 는
   폐기됨(403)
 - 메타데이터는 `WAITING_FOR_REVIEW`·`IN_REVIEW` 까지 수정 가능, `READY_FOR_SALE` 에서 잠김
 
 ### Android (일부 수동)
 - Google Play Developer API (Service Account)
-- 수동 필요: 앱 생성, IARC 콘텐츠 등급, 데이터 안전 섹션
+- 수동 필요: 앱 생성, IARC 콘텐츠 등급, 데이터 안전 섹션, **내부 테스트 테스터 이메일 목록 연결 (1회 필수 — API는 내부 트랙 테스터 지정 거부함)**
 - 수동 완료 후 AskUserQuestion으로 재개 → AAB 업로드 → 릴리즈
 
 ### AdMob (수동 생성 → 자동 통합)
